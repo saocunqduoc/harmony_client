@@ -1,0 +1,110 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 250 100% 99%;
+    --foreground: 250 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 250 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 250 10% 10%;
+
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 250 30% 96%;
+    --secondary-foreground: 250 10% 30%;
+
+    --muted: 250 10% 96%;
+    --muted-foreground: 250 10% 40%;
+
+    --accent: 262 80% 96%;
+    --accent-foreground: 250 10% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 250 15% 90%;
+    --input: 250 15% 90%;
+    --ring: 258 90% 66%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 250 10% 6%;
+    --foreground: 250 10% 98%;
+
+    --card: 250 10% 8%;
+    --card-foreground: 250 10% 98%;
+
+    --popover: 250 10% 6%;
+    --popover-foreground: 250 10% 98%;
+
+    --primary: 258 90% 66%;
+    --primary-foreground: 250 10% 98%;
+
+    --secondary: 250 30% 12%;
+    --secondary-foreground: 250 10% 90%;
+
+    --muted: 250 10% 15%;
+    --muted-foreground: 250 10% 70%;
+
+    --accent: 262 80% 15%;
+    --accent-foreground: 250 10% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 250 15% 20%;
+    --input: 250 15% 20%;
+    --ring: 258 90% 66%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .hero-gradient {
+    @apply bg-gradient-to-r from-harmony-200 via-harmony-100 to-harmony-50;
+  }
+  
+  .service-card {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .category-tag {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-medium;
+  }
+}

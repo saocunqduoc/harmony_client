@@ -1,0 +1,243 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, XCircle, Loader2, AlertTriangle } from 'lucide-react';
+import Layout from '@/components/layout/Layout';
+import { usePayment } from '@/hooks/use-payment';
+import { useQuery } from '@tanstack/react-query';
+import type { PaymentStatus } from '@/api/services/paymentService';
+import { toast } from 'sonner';
+
+const DEFAULT_STATUS: PaymentStatus = {
+  status: 'pending',
+  message: 'Đang kiểm tra trạng thái thanh toán...'
+};
+
+const PaymentResult: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { 
+    getPaymentStatus, 
+    transactionId, 
+    processPaymentRedirect,
+    isProcessingRedirect
+  } = usePayment();
+  
+  const [isProcessed, setIsProcessed] = useState(false);
+  const [processingError, setProcessingError] = useState<string | null>(null);
+
+  // Extract ZaloPay parameters from URL if present
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const apptransid = searchParams.get('apptransid');
+    const status = searchParams.get('status');
+    const processed = searchParams.get('processed');
+    
+    // Only process if there's a transaction ID, it hasn't been processed yet,
+    // and there's no 'processed' flag in the URL
+    if (apptransid && !isProcessed && !processed) {
+      console.log('ZaloPay redirect detected, processing payment result...', { apptransid, status });
+      setIsProcessed(true);
+      
+      // Send these parameters to the backend to update payment status
+      const params = {
+        apptransid,
+        status: status || undefined,
+        amount: searchParams.get('amount') || undefined,
+        appid: searchParams.get('appid') || undefined,
+        bankcode: searchParams.get('bankcode') || undefined,
+        checksum: searchParams.get('checksum') || undefined
+      };
+
+      // Use the hook to process payment redirect
+      const processZaloPayRedirect = async () => {
+        try {
+          await processPaymentRedirect(params);
+          
+          // After processing, add processed flag to URL to prevent reprocessing if page refreshes
+          const newSearchParams = new URLSearchParams(location.search);
+          newSearchParams.set('processed', 'true');
+          
+          // Replace URL without causing a page reload
+          window.history.replaceState(
+            {},
+            '',
+            `${location.pathname}?${newSearchParams.toString()}`
+          );
+        } catch (error) {
+          console.error('Error processing ZaloPay redirect', error);
+          setProcessingError("Có lỗi xử lý kết quả thanh toán. Đang hiển thị trạng thái từ thông tin URL.");
+          
+          // Still mark as processed to prevent infinite retries
+          const newSearchParams = new URLSearchParams(location.search);
+          newSearchParams.set('processed', 'true');
+          window.history.replaceState(
+            {},
+            '',
+            `${location.pathname}?${newSearchParams.toString()}`
+          );
+        }
+      };
+      
+      processZaloPayRedirect();
+    }
+  }, [location.search, processPaymentRedirect, isProcessed]);
+  
+  // Check for payment status with priority to URL parameters if present
+  const { data } = useQuery({
+    queryKey: ['payment-status', transactionId],
+    queryFn: async () => {
+      // First, check if payment status is in URL parameters
+      const urlParams = new URLSearchParams(location.search);
+      const urlStatus = urlParams.get('status');
+      const urlTransId = urlParams.get('transactionId') || urlParams.get('apptransid');
+      
+      if (urlStatus && urlTransId) {
+        console.log('Using payment status from URL parameters');
+        
+        // For ZaloPay, convert status code to readable status
+        let statusText: 'success' | 'failed' | 'pending' = 'pending';
+        let statusMessage = '';
+        
+        if (urlStatus === '1') {
+          statusText = 'success';
+          statusMessage = 'Thanh toán thành công';
+        } else if (urlStatus.startsWith('-')) {
+          statusText = 'failed';
+          statusMessage = urlParams.get('message') || 'Thanh toán thất bại';
+          
+          // If we had a processing error earlier, use that for display
+          if (processingError) {
+            statusMessage = processingError;
+          }
+        }
+        
+        return {
+          status: statusText,
+          message: statusMessage,
+          transactionId: urlTransId,
+          amount: urlParams.get('amount') ? parseInt(urlParams.get('amount') || '0') : undefined,
+          failureReason: urlParams.get('failureReason') || undefined
+        } as PaymentStatus;
+      }
+      
+      // If not in URL, check with backend using the hook
+      try {
+        const status = await getPaymentStatus?.();
+        console.log('Backend payment status:', status);
+        return status || DEFAULT_STATUS;
+      } catch (error) {
+        console.error('Error fetching payment status:', error);
+        toast.error('Lỗi khi kiểm tra trạng thái thanh toán');
+        return {
+          status: 'failed',
+          message: 'Lỗi khi kiểm tra trạng thái thanh toán'
+        } as PaymentStatus;
+      }
+    },
+    enabled: !isProcessingRedirect && (!!transactionId || !!location.search),
+    refetchInterval: (query) => {
+      const status = query.state.data as PaymentStatus | undefined;
+      if (!status) return 3000;
+      return status.status === 'pending' ? 3000 : false;
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 0
+  });
+
+  const paymentStatus = (data || DEFAULT_STATUS) as PaymentStatus;
+
+  const renderIcon = () => {
+    switch (paymentStatus.status) {
+      case 'success':
+        return <CheckCircle2 className="h-16 w-16 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-16 w-16 text-red-500" />;
+      case 'timeout':
+        return <AlertTriangle className="h-16 w-16 text-amber-500" />;
+      default:
+        return <Loader2 className="h-16 w-16 text-primary animate-spin" />;
+    }
+  };
+
+  const renderTitle = () => {
+    switch (paymentStatus.status) {
+      case 'success':
+        return 'Thanh toán thành công!';
+      case 'failed':
+        return 'Thanh toán thất bại';
+      case 'timeout':
+        return 'Thanh toán hết hạn';
+      default:
+        return 'Đang xử lý thanh toán...';
+    }
+  };
+
+  return (
+    <Layout>
+      <div className="container py-12 max-w-md mx-auto">
+        <Card className="text-center">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              {renderIcon()}
+            </div>
+            <CardTitle className="text-2xl">
+              {renderTitle()}
+            </CardTitle>
+            <CardDescription>
+              {paymentStatus.message}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {paymentStatus.transactionId && (
+              <div className="text-xs p-2 bg-muted rounded-md">
+                <p className="font-semibold">Mã giao dịch:</p>
+                <p className="font-mono">{paymentStatus.transactionId}</p>
+              </div>
+            )}
+            {paymentStatus.amount && (
+              <div className="text-xs p-2 bg-muted rounded-md">
+                <p className="font-semibold">Số tiền:</p>
+                <p className="font-mono">{parseInt(String(paymentStatus.amount)).toLocaleString('vi-VN')} VND</p>
+              </div>
+            )}
+            {paymentStatus.failureReason && (
+              <div className="text-xs p-2 bg-red-50 text-red-700 rounded-md">
+                <p className="font-semibold">Lý do:</p>
+                <p>{paymentStatus.failureReason}</p>
+              </div>
+            )}
+            {processingError && (
+              <div className="text-xs p-2 bg-amber-50 text-amber-700 rounded-md">
+                <p className="font-semibold">Lưu ý:</p>
+                <p>{processingError}</p>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex-col gap-2">
+            <Button 
+              className="w-full" 
+              onClick={() => navigate('/user/bookings')}
+              disabled={paymentStatus.status === 'pending'}
+            >
+              Xem đặt lịch của tôi
+            </Button>
+            <Button 
+              variant={paymentStatus.status === 'failed' || paymentStatus.status === 'timeout' ? 'default' : 'outline'} 
+              className="w-full" 
+              onClick={() => navigate('/services')}
+              disabled={paymentStatus.status === 'pending'}
+            >
+              {paymentStatus.status === 'failed' || paymentStatus.status === 'timeout' 
+                ? 'Thử lại' 
+                : 'Tiếp tục đặt dịch vụ'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </Layout>
+  );
+};
+
+export default PaymentResult;
