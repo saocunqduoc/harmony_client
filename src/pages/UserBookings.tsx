@@ -119,6 +119,7 @@ const UserBookings = () => {
         case 'upcoming':
           params = {
             status: ['pending', 'confirmed'].join(','),
+            paymentStatus: ['pending', 'paid'].join(',')
           };
           break;
         case 'draft':

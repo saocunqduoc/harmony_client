@@ -1,15 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { X, Star, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Star, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
-import { locationService } from '@/api/services/locationService';
+import { locationService, Province } from '@/api/services/locationService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ServiceCategory } from '@/api/services/serviceCategoryService';
-import axios from 'axios';
 
 interface ServiceFiltersProps {
   categories: ServiceCategory[];
@@ -27,14 +25,6 @@ interface ServiceFiltersProps {
   handleSearchTermChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleApplyFilters: () => void;
   handleClearFilters: () => void;
-}
-
-interface Province {
-  id: number;
-  name: string;
-  type: number;
-  typeText: string;
-  slug: string;
 }
 
 const ServiceFilters = ({
@@ -55,66 +45,33 @@ const ServiceFilters = ({
   handleClearFilters,
 }: ServiceFiltersProps) => {
   const [citySearchTerm, setCitySearchTerm] = useState("");
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
+  const citySearchInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch provinces from the API when search term changes
+  // Use React Query to fetch and cache provinces based on search term
+  const { 
+    data: provincesResponse, 
+    isLoading: isLoadingProvinces 
+  } = useQuery({
+    queryKey: ['provinces', citySearchTerm],
+    queryFn: async () => {
+      return await locationService.getProvinces({
+        query: citySearchTerm,
+        page: 1,
+        size: 50
+      });
+    },
+    keepPreviousData: true,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const provinces = provincesResponse?.data || [];
+
+  // Maintain input focus when provinces are fetched
   useEffect(() => {
-    const fetchProvinces = async () => {
-      if (citySearchTerm.trim().length === 0) {
-        setIsLoadingProvinces(true);
-        try {
-          const response = await axios.get('https://open.oapi.vn/location/provinces');
-          if (response.data && response.data.data) {
-            setProvinces(response.data.data);
-          }
-        } catch (error) {
-          console.error('Error fetching provinces:', error);
-        } finally {
-          setIsLoadingProvinces(false);
-        }
-        return;
-      }
-      
-      setIsLoadingProvinces(true);
-      try {
-        const response = await axios.get(`https://open.oapi.vn/location/provinces?query=${citySearchTerm}`);
-        if (response.data && response.data.data) {
-          setProvinces(response.data.data);
-        }
-      } catch (error) {
-        console.error('Error searching provinces:', error);
-      } finally {
-        setIsLoadingProvinces(false);
-      }
-    };
-
-    // Debounce the search
-    const timer = setTimeout(() => {
-      fetchProvinces();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [citySearchTerm]);
-
-  // Load initial provinces
-  useEffect(() => {
-    const fetchInitialProvinces = async () => {
-      setIsLoadingProvinces(true);
-      try {
-        const response = await axios.get('https://open.oapi.vn/location/provinces');
-        if (response.data && response.data.data) {
-          setProvinces(response.data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching initial provinces:', error);
-      } finally {
-        setIsLoadingProvinces(false);
-      }
-    };
-
-    fetchInitialProvinces();
-  }, []);
+    if (citySearchInputRef.current) {
+      citySearchInputRef.current.focus();
+    }
+  }, [provinces]);
 
   const renderStarRating = (rating: number) => {
     return (
@@ -147,12 +104,17 @@ const ServiceFilters = ({
       <div>
         <h3 className="font-medium mb-3">Thành phố</h3>
         <div className="relative">
-          <Input
-            placeholder="Tìm kiếm/thành phố..."
-            value={citySearchTerm}
-            onChange={(e) => setCitySearchTerm(e.target.value)}
-            className="mb-2"
-          />
+          <div className="relative">
+            <Input
+              placeholder="Tìm kiếm thành phố..."
+              value={citySearchTerm}
+              onChange={(e) => setCitySearchTerm(e.target.value)}
+              className="mb-2 pl-9"
+              ref={citySearchInputRef}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          </div>
           <div className="max-h-60 overflow-y-auto border rounded-md">
             <div className="p-2 hover:bg-accent rounded-md cursor-pointer" onClick={() => handleCityChange('all_cities')}>
               <Checkbox 
@@ -160,23 +122,33 @@ const ServiceFilters = ({
                 checked={selectedCity === 'all_cities'}
                 className="mr-2"
               />
-              <label htmlFor="all-cities">Tất cả</label>
+              <label htmlFor="all-cities" className="cursor-pointer">Tất cả</label>
             </div>
-            {provinces.map((province) => (
-              <div 
-                key={province.id} 
-                className="p-2 hover:bg-accent rounded-md cursor-pointer"
-                onClick={() => handleCityChange(province.name)}
-              >
-                <Checkbox 
-                  id={`city-${province.id}`}
-                  checked={selectedCity === province.name}
-                  className="mr-2"
-                />
-                <label htmlFor={`city-${province.id}`}>{province.name}</label>
+            {isLoadingProvinces ? (
+              <div className="p-4 flex items-center justify-center text-muted-foreground">
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Đang tải...
               </div>
-            ))}
-            {isLoadingProvinces && <div className="p-2 text-center text-muted-foreground">Đang tải...</div>}
+            ) : provinces.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground">
+                Không tìm thấy thành phố
+              </div>
+            ) : (
+              provinces.map((province) => (
+                <div 
+                  key={province.code} 
+                  className="p-2 hover:bg-accent rounded-md cursor-pointer"
+                  onClick={() => handleCityChange(province.name)}
+                >
+                  <Checkbox 
+                    id={`city-${province.code}`}
+                    checked={selectedCity === province.name}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`city-${province.code}`} className="cursor-pointer">{province.name}</label>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

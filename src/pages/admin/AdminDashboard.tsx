@@ -94,13 +94,13 @@ const AdminDashboard = () => {
                 <Calendar className="h-4 w-4 mr-3" />
                 Đặt lịch
               </Link>
-              <Link
+              {/* <Link
                 to="/admin/analytics"
                 className={`flex items-center px-3 py-2 rounded-md hover:bg-accent ${isActive('/admin/analytics') ? 'bg-accent' : ''}`}
               >
                 <HomeIcon className="h-4 w-4 mr-3" />
                 Thống kê
-              </Link>
+              </Link> */}
               <Link
                 to="/admin/settings"
                 className={`flex items-center px-3 py-2 rounded-md hover:bg-accent ${isActive('/admin/settings') ? 'bg-accent' : ''}`}
@@ -126,7 +126,7 @@ const AdminDashboard = () => {
             <Route path="businesses" element={<AdminBusinesses />} />
             <Route path="services" element={<AdminServices />} />
             <Route path="bookings" element={<AdminBookings />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
+            {/* <Route path="analytics" element={<AdminAnalytics />} /> */}
             <Route path="settings" element={<AdminSettings />} />
           </Routes>
         </main>

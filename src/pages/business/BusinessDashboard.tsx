@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Link, useNavigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Home, Calendar, Users, Settings, BarChart, PlusCircle, Briefcase } from 'lucide-react';
 import BusinessServices from './BusinessServices';
 import BusinessAppointments from './BusinessAppointments';
+import BusinessAppointmentDetail from './BusinessAppointmentDetail';
 import BusinessCustomers from './BusinessCustomers';
 import BusinessAnalytics from './BusinessAnalytics';
 import BusinessSettings from './BusinessSettings';
@@ -92,7 +92,9 @@ const BusinessDashboard = () => {
               <NavLink
                 to={`${baseUrl}/appointments`}
                 className={({ isActive }) => 
-                  `flex items-center px-3 py-2 rounded-md hover:bg-accent ${isActive ? 'bg-accent' : ''}`
+                  `flex items-center px-3 py-2 rounded-md hover:bg-accent ${
+                    isActive || location.pathname.startsWith(`${baseUrl}/appointments/`) ? 'bg-accent' : ''
+                  }`
                 }
               >
                 <Calendar className="h-4 w-4 mr-3" />
@@ -142,6 +144,7 @@ const BusinessDashboard = () => {
             <Route path="services" element={<BusinessServices />} />
             <Route path="staff" element={<BusinessStaff />} />
             <Route path="appointments" element={<BusinessAppointments />} />
+            <Route path="appointments/:id" element={<BusinessAppointmentDetail />} />
             <Route path="customers" element={<BusinessCustomers />} />
             <Route path="analytics" element={<BusinessAnalytics />} />
             <Route path="settings" element={<BusinessSettings />} />

@@ -1,4 +1,3 @@
-
 import { apiClient } from "../client";
 
 // Types for admin dashboard statistics
@@ -33,13 +32,20 @@ export interface BusinessInfo {
   createdAt: string;
 }
 
+// Updated to match actual API response
 export interface UserInfo {
   id: number;
-  name: string;
+  fullName: string;
   email: string;
-  phone?: string;
-  roles: { id: number; name: string }[];
+  phone?: string | null;
+  address?: string | null;
+  avatar?: string | null;
+  role: string;
+  status: string;
+  emailVerified: boolean;
+  phoneVerified: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface BookingInfo {
@@ -114,11 +120,20 @@ export interface PaginationParams {
   rating?: number;
 }
 
+// Updated to match actual API response
 export interface PaginationMeta {
-  total: number;
-  page: number;
-  limit: number;
+  totalItems: number;
   totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+// Updated to match actual API response format
+interface ApiResponse<T> {
+  statusCode: number;
+  data: T;
+  message: string;
+  success: boolean;
 }
 
 /**
@@ -129,85 +144,168 @@ export const adminService = {
    * Get dashboard statistics
    */
   getDashboardStats: async (): Promise<DashboardStats> => {
-    return apiClient.get<DashboardStats>("/admin/dashboard");
+    console.log('Calling getDashboardStats API');
+    const response = await apiClient.get<ApiResponse<DashboardStats>>("/admins/dashboard");
+    console.log('getDashboardStats raw response:', response);
+    console.log('getDashboardStats data structure:', response.data);
+    return response?.data; // Extract data from nested response
   },
 
   /**
    * Get all businesses (with pagination)
    */
   getAllBusinesses: async (params: PaginationParams = {}) => {
-    return apiClient.get<{ businesses: BusinessInfo[]; pagination: PaginationMeta }>(
-      "/admin/businesses", 
-      { params }
-    );
+    console.log('Calling getAllBusinesses API with params:', params);
+    const response = await apiClient.get<ApiResponse<{ 
+      businesses: BusinessInfo[]; 
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
+    }>>("/admins/businesses", { params });
+    
+    console.log('getAllBusinesses raw response:', response);
+    console.log('getAllBusinesses data structure:', response.data);
+    
+    // Extract data from nested response
+    return {
+      businesses: response.data.data.items || [],
+      pagination: {
+        total: response.data.data.totalItems,
+        totalPages: response.data.data.totalPages,
+        page: response.data.data.currentPage,
+        limit: response.data.data.itemsPerPage
+      }
+    };
   },
 
   /**
    * Get all users (with pagination)
    */
   getAllUsers: async (params: PaginationParams = {}) => {
-    return apiClient.get<{ users: UserInfo[]; pagination: PaginationMeta }>(
-      "/admin/users", 
-      { params }
-    );
+    console.log('Calling getAllUsers API with params:', params);
+    const response = await apiClient.get<ApiResponse<{
+      users: UserInfo[];
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
+    }>>("/admins/users", { params });
+    
+    console.log('getAllUsers raw response:', response);
+    console.log('getAllUsers data structure:', response.data);
+    
+    // Extract data from nested response
+    return {
+      users: response.data?.data.items || [],
+      pagination: {
+        total: response.data?.data?.totalItems,
+        totalPages: response?.data?.data?.totalPages,
+        page: response.data?.data?.currentPage,
+        limit: response.data?.data?.itemsPerPage
+      }
+    };
   },
 
   /**
    * Get all bookings (with pagination)
    */
   getAllBookings: async (params: PaginationParams = {}) => {
-    return apiClient.get<{ bookings: BookingInfo[]; pagination: PaginationMeta }>(
-      "/admin/bookings", 
-      { params }
-    );
+    const response = await apiClient.get<ApiResponse<{
+      bookings: BookingInfo[];
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
+    }>>("/admins/bookings", { params });
+    
+    return {
+      bookings: response.data.bookings,
+      pagination: {
+        total: response.data.totalItems,
+        totalPages: response.data.totalPages,
+        page: response.data.currentPage,
+        limit: response.data.itemsPerPage
+      }
+    };
   },
 
   /**
    * Get all payments (with pagination)
    */
   getAllPayments: async (params: PaginationParams = {}) => {
-    return apiClient.get<{ payments: PaymentInfo[]; pagination: PaginationMeta }>(
-      "/admin/payments", 
-      { params }
-    );
+    const response = await apiClient.get<ApiResponse<{
+      payments: PaymentInfo[];
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
+    }>>("/admins/payments", { params });
+    
+    return {
+      payments: response.data.payments,
+      pagination: {
+        total: response.data.totalItems,
+        totalPages: response.data.totalPages,
+        page: response.data.currentPage,
+        limit: response.data.itemsPerPage
+      }
+    };
   },
 
   /**
    * Get all reviews (with pagination)
    */
   getAllReviews: async (params: PaginationParams = {}) => {
-    return apiClient.get<{ reviews: ReviewInfo[]; pagination: PaginationMeta }>(
-      "/admin/reviews", 
-      { params }
-    );
+    const response = await apiClient.get<ApiResponse<{
+      reviews: ReviewInfo[];
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
+    }>>("/admins/reviews", { params });
+    
+    return {
+      reviews: response.data.reviews,
+      pagination: {
+        total: response.data.totalItems,
+        totalPages: response.data.totalPages,
+        page: response.data.currentPage,
+        limit: response.data.itemsPerPage
+      }
+    };
   },
 
   /**
    * Delete a review
    */
   deleteReview: async (id: number) => {
-    return apiClient.delete<{ message: string }>(`/admin/reviews/${id}`);
+    const response = await apiClient.delete<ApiResponse<{ message: string }>>(`/admins/reviews/${id}`);
+    return response.data;
   },
 
   /**
    * Get site settings
    */
   getSiteSettings: async () => {
-    return apiClient.get<{ settings: SiteSettings }>("/admin/settings");
+    const response = await apiClient.get<ApiResponse<{ settings: SiteSettings }>>("/admins/settings");
+    return response.data;
   },
 
   /**
    * Update site settings
    */
   updateSiteSettings: async (settings: SiteSettings) => {
-    return apiClient.put<{ message: string }>("/admin/settings", { settings });
+    const response = await apiClient.put<ApiResponse<{ message: string }>>("/admins/settings", { settings });
+    return response.data;
   },
 
   /**
    * Update user roles
    */
-  updateUserRoles: async (userId: number, roleIds: string[]) => {
-    return apiClient.put<{ message: string }>(`/users/${userId}/roles`, { roleIds });
+  updateUserRoles: async (userId: number, role: string) => {
+    const response = await apiClient.put<ApiResponse<{ message: string }>>(`/admins/users/${userId}/role`, { role });
+    return response.data;
   }
 };
 

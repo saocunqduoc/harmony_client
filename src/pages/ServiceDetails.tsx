@@ -90,16 +90,11 @@ const ServiceDetails = () => {
         : Number(service.category.id)) 
     : undefined;
   
-  const hasRating = (service.rating?.average && service.rating.average > 0) || 
-                    (service.review?.averageRating && service.review.averageRating > 0);
-  
-  const formattedRating = hasRating 
-    ? (service.rating?.average 
-      ? formatRating(service.rating.average) 
-      : service.review?.averageRating 
-        ? formatRating(service.review.averageRating) 
-        : null)
-    : null;
+    const hasRating = (service.rating?.average > 0) || (service.review?.averageRating > 0);
+
+    const formattedRating = hasRating
+      ? formatRating(service.rating?.average ?? service.review?.averageRating)
+      : ' ';
 
   const numericBusinessId = businessId !== null 
     ? (typeof businessId === 'string' ? parseInt(businessId as string, 10) : businessId) 
@@ -154,7 +149,7 @@ const ServiceDetails = () => {
                 <img 
                   src={service.thumbnail} 
                   alt={service.name} 
-                  className="w-full object-cover rounded-xl"
+                  className="w-full object-contain rounded-xl"
                   style={{ maxHeight: '500px' }}
                 />
               </div>
@@ -202,6 +197,8 @@ const ServiceDetails = () => {
           <RecommendedServices 
             currentServiceId={serviceId}
             categoryId={categoryId}
+            limit={4}
+            city={service.business?.city || ''} // Assuming the city is part of the business object
           />
         </div>
       </div>
