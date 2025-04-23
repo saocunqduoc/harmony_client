@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin } from 'lucide-react';
@@ -20,12 +19,38 @@ const Hero = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [locationsOpen, setLocationsOpen] = useState(false);
+  const [citySearchQuery, setCitySearchQuery] = useState('');
+  const citySearchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const { data: cities = [] } = useQuery({
+  // Basic cities query
+  const { data: allCities = [] } = useQuery({
     queryKey: ['cities'],
     queryFn: locationService.getCities
   });
+
+  // Get filtered cities from the API based on search query
+  const { data: filteredProvinces = [], isLoading: isLoadingCities } = useQuery({
+    queryKey: ['filteredCities', citySearchQuery],
+    queryFn: async () => {
+      if (!citySearchQuery || citySearchQuery.length < 1) return [];
+      
+      try {
+        const response = await locationService.getProvinces({ query: citySearchQuery });
+        return response.data;
+      } catch (error) {
+        console.error('Error searching cities:', error);
+        return [];
+      }
+    },
+    enabled: citySearchQuery.length >= 1
+  });
+
+  // Map filtered provinces to just city names for display
+  const filteredCities = filteredProvinces.map(province => province.name);
+
+  // Cities to display in dropdown
+  const citiesToDisplay = citySearchQuery.length >= 1 ? filteredCities : allCities;
 
   const { data: categoriesResponse } = useQuery({
     queryKey: ['serviceCategories'],
@@ -50,7 +75,7 @@ const Hero = () => {
   };
 
   const handleCategoryClick = (categoryId: number) => {
-    navigate(`/services?categoryIds=${categoryId}`);
+    navigate(`/services?category=${categoryId}&sort=name_asc`);
   };
 
   // Handle keyboard shortcuts for search
@@ -65,6 +90,13 @@ const Hero = () => {
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
   }, []);
+
+  // Maintain input focus when dropdown content updates
+  useEffect(() => {
+    if (citySearchInputRef.current) {
+      citySearchInputRef.current.focus();
+    }
+  }, [filteredCities]);
 
   return (
     <div className="hero-gradient py-16 md:py-24">
@@ -98,50 +130,35 @@ const Hero = () => {
                 </div>
                 <div className="md:w-[180px]">
                   <Select value={location} onValueChange={setLocation}>
-                    <SelectTrigger className="h-full" onClick={() => setLocationsOpen(true)}>
+                    <SelectTrigger className="h-full">
                       <div className="flex items-center">
                         <MapPin size={18} className="text-muted-foreground mr-2" />
                         <SelectValue placeholder="Location" />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
+                      <div className="p-2">
+                        <Input
+                          placeholder="Search location..."
+                          value={citySearchQuery}
+                          onChange={(e) => setCitySearchQuery(e.target.value)}
+                          className="mb-2"
+                          ref={citySearchInputRef}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
                       <SelectItem value="all_locations">All Locations</SelectItem>
-                      {cities.map((city) => (
-                        <SelectItem key={city} value={city}>{city}</SelectItem>
-                      ))}
+                      {isLoadingCities ? (
+                        <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
+                      ) : citiesToDisplay.length === 0 ? (
+                        <div className="p-2 text-center text-sm text-muted-foreground">No locations found</div>
+                      ) : (
+                        citiesToDisplay.map((city) => (
+                          <SelectItem key={city} value={city || `city-${Math.random()}`}>{city}</SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
-                  
-                  <CommandDialog open={locationsOpen} onOpenChange={setLocationsOpen}>
-                    <CommandInput placeholder="Search location..." />
-                    <CommandList>
-                      <CommandGroup heading="Locations">
-                        <CommandItem
-                          value="all_locations" 
-                          onSelect={() => {
-                            setLocation("");
-                            setLocationsOpen(false);
-                          }}
-                        >
-                          <MapPin className="mr-2 h-4 w-4" />
-                          <span>All Locations</span>
-                        </CommandItem>
-                        {cities.map((city) => (
-                          <CommandItem
-                            key={city}
-                            value={city}
-                            onSelect={() => {
-                              setLocation(city);
-                              setLocationsOpen(false);
-                            }}
-                          >
-                            <MapPin className="mr-2 h-4 w-4" />
-                            <span>{city}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </CommandDialog>
                 </div>
               </div>
               <Button size="lg" onClick={handleSearch} className="w-full">

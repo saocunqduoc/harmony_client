@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,7 +15,7 @@ interface TimeSlotSelectorProps {
   onStaffSelect: (staffId: any) => void;
   selectedTab?: string;
   onTabChange?: (value: string) => void;
-  selectedDate?: Date; // Thêm prop này
+  selectedDate?: Date;
 }
 
 const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
@@ -32,7 +31,6 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
   // Format time và kiểm tra thời gian đã qua
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
     return `${hours.padStart(2, '0')}:${minutes}`; // Hiển thị theo 24h
   };
 
@@ -40,13 +38,14 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
     if (!selectedDate) return false;
 
     const now = new Date();
-    const slotTime = parse(slot.startTime, 'HH:mm:ss', new Date());
+    const [hours, minutes] = slot.startTime.split(':');
+    
     const slotDateTime = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth(),
       selectedDate.getDate(),
-      slotTime.getHours(),
-      slotTime.getMinutes()
+      parseInt(hours),
+      parseInt(minutes)
     );
 
     return isBefore(slotDateTime, now);
@@ -54,6 +53,7 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
 
   // Lọc các slot đã qua
   const filterAvailableSlots = (slots: { startTime: string; endTime: string }[]) => {
+    if (!selectedDate) return slots;
     return slots.filter(slot => !isTimeSlotPassed(slot));
   };
 
@@ -77,7 +77,8 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
   if (availableSlots.length === 0) {
     return (
       <div className="text-center p-4">
-        Không còn khung giờ khả dụng cho ngày hôm nay.
+        <p className="font-medium text-red-500">Thời gian đặt lịch cho ngày này đã hết</p>
+        <p className="text-sm text-muted-foreground mt-2">Vui lòng chọn một ngày khác.</p>
       </div>
     );
   }
@@ -86,10 +87,10 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
     <Card>
       <CardContent className="p-4">
         <Tabs value={selectedTab} onValueChange={onTabChange}>
-          <TabsList className="grid w-full grid-cols-2">
+          {/* <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="staff">Chọn nhân viên</TabsTrigger>
             <TabsTrigger value="time">Chọn giờ</TabsTrigger>
-          </TabsList>
+          </TabsList> */}
           
           <TabsContent value="staff">
             {timeSlots.length > 0 && (
@@ -133,7 +134,6 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
                     }
                     size="sm"
                     onClick={() => onTimeSlotSelect(staff.staffId, slot)}
-                    disabled={isTimeSlotPassed(slot)}
                   >
                     {formatTime(slot.startTime)}
                   </Button>

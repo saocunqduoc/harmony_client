@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, User, Bell, LogOut } from 'lucide-react';
+import { Search, Menu, X, User, Bell, LogOut, Calendar, LayoutDashboard, Clock } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -61,6 +60,33 @@ const Navbar = () => {
       .toUpperCase()
       .substring(0, 2);
   };
+  
+  // Handle dashboard routing based on user role
+  const getDashboardLink = () => {
+    if (!user || !user.role) return '/dashboard';
+    
+    // Get the role
+    const userRole = user.role;
+    
+    switch (userRole) {
+      case 'admin':
+        return '/admin';
+      case 'owner':
+        return '/business-dashboard';
+      case 'manager':
+        return '/business-dashboard'; // Manager uses the same dashboard as owner
+      case 'staff':
+        return '/staff-dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+  
+  // Only show bookings for customers, not for other roles
+  const showBookings = isAuthenticated && user?.role === 'customer';
+  
+  // Staff-specific menu items
+  const isStaff = isAuthenticated && user?.role === 'staff';
 
   return (
     <nav className="border-b bg-background py-4">
@@ -133,16 +159,33 @@ const Navbar = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
+                    <Link to={getDashboardLink()}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/profile">
                       <User className="mr-2 h-4 w-4" />
                       <span>Hồ sơ</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard">
-                      <span>Lịch hẹn</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {showBookings && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/bookings">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        <span>Lịch hẹn</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isStaff && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/staff-dashboard/schedule">
+                        <Clock className="mr-2 h-4 w-4" />
+                        <span>Lịch làm việc</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -199,8 +242,23 @@ const Navbar = () => {
             
             {isAuthenticated && user ? (
               <>
+                <Link to={getDashboardLink()} className="block p-2 hover:bg-accent rounded-md flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Link>
                 <Link to="/profile" className="block p-2 hover:bg-accent rounded-md">Hồ sơ</Link>
-                <Link to="/dashboard" className="block p-2 hover:bg-accent rounded-md">Lịch hẹn</Link>
+                {showBookings && (
+                  <Link to="/user/bookings" className="block p-2 hover:bg-accent rounded-md flex items-center gap-2">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Lịch hẹn
+                  </Link>
+                )}
+                {isStaff && (
+                  <Link to="/staff-dashboard/schedule" className="block p-2 hover:bg-accent rounded-md flex items-center gap-2">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Lịch làm việc
+                  </Link>
+                )}
                 <Button variant="ghost" onClick={handleLogout} className="justify-start">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Đăng xuất</span>

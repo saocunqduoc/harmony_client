@@ -31,6 +31,7 @@ import Dashboard from "./pages/Dashboard";
 import UserBookings from "./pages/UserBookings";
 import BusinessDashboard from "./pages/business/BusinessDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+// import StaffDashboard from "./pages/staff/StaffDashboard";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const App: React.FC = () => {
@@ -115,11 +116,11 @@ const App: React.FC = () => {
                 />
                 
                 {/* Staff routes */}
-                <Route path="/staff-dashboard/*" element={
+                {/* <Route path="/staff-dashboard/*" element={
                   <ProtectedRoute allowedRoles={['staff']}>
-                    <Dashboard />
+                    <StaffDashboard />
                   </ProtectedRoute>
-                } />
+                } /> */}
                 
                 {/* Admin routes */}
                 <Route path="/admin/*" element={

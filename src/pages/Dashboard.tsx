@@ -62,7 +62,7 @@ const Dashboard = () => {
                   Tổng quan
                 </Link>
                 <Link
-                  to="/user/bookings"
+                  to="/dashboard/bookings"
                   className={`flex items-center px-3 py-2 rounded-md hover:bg-accent ${isActive('/user/bookings') ? 'bg-accent' : ''}`}
                 >
                   <Calendar className="h-4 w-4 mr-3" />

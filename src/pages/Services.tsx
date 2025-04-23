@@ -187,7 +187,7 @@ const Services = () => {
     setShouldFetch(true);
   };
   
-  const handleCategoryChange = (categoryId: number) => {
+  const handleCategoryChange = (categoryId: any) => {
     setSelectedCategories(prev => {
       if (prev.includes(categoryId)) {
         return prev.filter(id => id !== categoryId);

@@ -45,7 +45,7 @@ const AdminServices = () => {
   };
 
   // Get services data safely
-  const services = servicesData?.data?.items || [];
+  const services = servicesData?.data?.data?.items || [];
 
   return (
     <div>
@@ -122,7 +122,7 @@ const AdminServices = () => {
                       <td className="py-3 px-4 text-right">
                         <div className="flex justify-end space-x-2">
                           <Button variant="outline" size="sm" asChild>
-                            <Link to={`/services/${service.id}`}>
+                            <Link to={`/service/${service.id}`}>
                               <EyeIcon className="h-4 w-4" />
                             </Link>
                           </Button>

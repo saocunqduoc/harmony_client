@@ -1,7 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +37,7 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [selectedStaffId, setSelectedStaffId] = useState<number | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{startTime: string, endTime: string} | null>(null);
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([]);
-  const [activeTab, setActiveTab] = useState<string>("staff");
+  const [activeTab, setActiveTab] = useState<string>("date");
   const { isAuthenticated } = useApiAuth();
   const navigate = useNavigate();
 
@@ -50,6 +49,13 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
     serviceIdType: typeof serviceId,
     businessIdType: typeof businessId
   });
+
+  // Reset time slot if selected date is today to prevent booking past time slots
+  useEffect(() => {
+    if (selectedDate && selectedTimeSlot && isToday(selectedDate)) {
+      setSelectedTimeSlot(null);
+    }
+  }, [selectedDate]);
 
   const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
@@ -96,7 +102,7 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
     } else {
       setSelectedStaffId(parseInt(staffId));
     }
-    setActiveTab("date");
+    setActiveTab("time");
   };
 
   const staffList = timeSlots || [];
@@ -112,6 +118,25 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
     if (!selectedDate || !selectedTimeSlot) {
       toast.error('Vui lòng chọn ngày và thời gian');
+      return;
+    }
+    
+    // Kiểm tra xem thời gian đã qua chưa
+    const now = new Date();
+    const [hours, minutes] = selectedTimeSlot.startTime.split(':');
+    const appointmentTime = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      parseInt(hours),
+      parseInt(minutes)
+    );
+    
+    if (appointmentTime < now) {
+      toast.error('Không thể đặt lịch vào thời gian đã qua', {
+        description: 'Vui lòng chọn một khung giờ khác.'
+      });
+      setSelectedTimeSlot(null);
       return;
     }
 
@@ -161,10 +186,43 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="staff">Chọn nhân viên</TabsTrigger>
-            <TabsTrigger value="date" disabled={!selectedStaffId}>Chọn ngày</TabsTrigger>
+            <TabsTrigger value="date">Chọn ngày</TabsTrigger>
+            <TabsTrigger value="staff" disabled={!selectedDate}>Chọn nhân viên</TabsTrigger>
             <TabsTrigger value="time" disabled={!selectedDate || !selectedStaffId}>Chọn giờ</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="date" className="space-y-4">
+            <div className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateChange}
+                className="rounded-md border"
+                disabled={(date) => {
+                  const now = new Date();
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  const maxDate = new Date();
+                  maxDate.setDate(maxDate.getDate() + 60);
+                  
+                  const isUnavailable = unavailableDates.some(unavailableDate => 
+                    format(unavailableDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+                  );
+                  
+                  return date < today || date > maxDate || isUnavailable;
+                }}
+              />
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setActiveTab("staff")}
+                disabled={!selectedDate}
+              >
+                Tiếp tục
+              </Button>
+            </div>
+          </TabsContent>
           
           <TabsContent value="staff" className="space-y-4">
             <div className="space-y-4 py-4">
@@ -191,39 +249,6 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
             </div>
           </TabsContent>
           
-          <TabsContent value="date" className="space-y-4">
-            <div className="flex justify-center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateChange}
-                className="rounded-md border"
-                disabled={(date) => {
-                  const now = new Date();
-                  now.setHours(0, 0, 0, 0);
-                  const maxDate = new Date();
-                  maxDate.setDate(maxDate.getDate() + 60);
-                  
-                  const isUnavailable = unavailableDates.some(unavailableDate => 
-                    format(unavailableDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
-                  );
-                  
-                  return date < now || date > maxDate || isUnavailable;
-                }}
-              />
-            </div>
-            
-            <div className="flex justify-end">
-              <Button 
-                variant="outline" 
-                onClick={() => setActiveTab("time")}
-                disabled={!selectedDate}
-              >
-                Tiếp tục
-              </Button>
-            </div>
-          </TabsContent>
-          
           <TabsContent value="time" className="space-y-4">
             {selectedDate && !isLoading && !error && timeSlots && Array.isArray(timeSlots) && (
               <TimeSlotSelector 
@@ -232,6 +257,7 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 selectedTimeSlot={selectedTimeSlot}
                 selectedStaffId={selectedStaffId}
                 onStaffSelect={handleStaffSelect}
+                selectedDate={selectedDate}
               />
             )}
             
