@@ -218,7 +218,7 @@ const PaymentResult: React.FC = () => {
           <CardFooter className="flex-col gap-2">
             <Button 
               className="w-full" 
-              onClick={() => navigate('/user/bookings')}
+              onClick={() => navigate('/user/bookings?tab=upcoming')}
               disabled={paymentStatus.status === 'pending'}
             >
               Xem đặt lịch của tôi

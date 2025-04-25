@@ -1,22 +1,21 @@
-
 import React from 'react';
 import { Search, Calendar, Star } from 'lucide-react';
 
 const steps = [
   {
     icon: Search,
-    title: 'Discover Services',
-    description: 'Browse through a wide range of wellness and beauty services from top-rated providers.'
+    title: 'Khám Phá Dịch Vụ',
+    description: 'Duyệt qua nhiều dịch vụ chăm sóc sức khỏe và làm đẹp từ các nhà cung cấp hàng đầu.'
   },
   {
     icon: Calendar,
-    title: 'Book Appointment',
-    description: 'Select a convenient time slot and book your appointment with just a few clicks.'
+    title: 'Đặt Lịch Hẹn',
+    description: 'Chọn khung giờ thuận tiện và đặt lịch hẹn chỉ với vài cú nhấp chuột.'
   },
   {
     icon: Star,
-    title: 'Enjoy & Review',
-    description: 'Enjoy your service and share your experience by leaving a review afterward.'
+    title: 'Trải Nghiệm & Đánh Giá',
+    description: 'Tận hưởng dịch vụ và chia sẻ trải nghiệm của bạn bằng cách để lại đánh giá sau đó.'
   },
 ];
 
@@ -25,9 +24,9 @@ const HowItWorks = () => {
     <section className="py-16 bg-secondary">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">How Harmony Works</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Cách Harmony Hoạt Động</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Book your next beauty or wellness appointment in three simple steps.
+            Đặt lịch hẹn làm đẹp hoặc chăm sóc sức khỏe tiếp theo của bạn trong ba bước đơn giản.
           </p>
         </div>
         

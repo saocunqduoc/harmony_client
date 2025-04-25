@@ -23,6 +23,7 @@ import ServiceDetails from "./pages/ServiceDetails";
 import BusinessProfile from "./pages/BusinessProfile";
 import NotFound from "./pages/NotFound";
 import Businesses from "./pages/Businesses";
+import ExploreBusinesses from "./pages/ExploreBusinesses";
 import Profile from "./pages/Profile";
 import CheckoutPage from "./pages/CheckoutPage";
 
@@ -50,13 +51,14 @@ const App: React.FC = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/businesses" element={<Businesses />} />
+                <Route path="/business/register" element={<Businesses />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/verify-otp" element={<VerifyOtp />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/service/:id" element={<ServiceDetails />} />
                 <Route path="/business/:id" element={<BusinessProfile />} />
+                <Route path="/businesses" element={<ExploreBusinesses />} />
                 
                 {/* Profile route (protected) */}
                 <Route 
@@ -129,8 +131,9 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } />
                 
-                {/* Review route */}
+                {/* Review routes */}
                 <Route path="/review/booking/:bookingId" element={<BookingReview />} />
+                <Route path="/booking/:bookingId/review" element={<BookingReview />} />
                 
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />

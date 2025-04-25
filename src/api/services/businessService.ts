@@ -68,16 +68,32 @@ export interface BusinessServiceResponse {
   updatedAt: string;
 }
 
+export interface BusinessSearchParams {
+  name?: string;
+  city?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface BusinessSearchResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  data: Business[];
+}
+
 /**
  * Business service for managing businesses
  */
 export const businessService = {
   /**
-   * Get all businesses
+   * Get all businesses with optional search parameters
    */
-  getAllBusinesses: async (): Promise<Business[]> => {
-    const response = await apiClient.get<any>("/businesses");
-    return response.data?.data || [];
+  getAllBusinesses: async (params?: BusinessSearchParams): Promise<BusinessSearchResponse> => {
+    const response = await apiClient.get<any>("/businesses", {
+      params: params
+    });
+    return response.data?.data || { total: 0, page: 1, pageSize: 10, data: [] };
   },
 
   /**

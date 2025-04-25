@@ -275,5 +275,21 @@ export const serviceApiService = {
       console.error("Error getting recommended services:", error);
       return [];
     }
+  },
+
+  getFeaturedServices: async (): Promise<Service[]> => {
+    try {
+      const response = await apiClient.get<any>("/services/featured");
+      
+      if (response.data?.data) {
+        return response.data.data;
+      }
+      
+      return [];
+    } catch (error) {
+      console.error("Error getting featured services:", error);
+      return [];
+    }
   }
+
 };

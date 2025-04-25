@@ -19,7 +19,7 @@ export interface BookingDetail {
   id: number;
   bookingId: number;
   serviceId: number;
-  serviceName: string;
+  name: string;
   price: number;
   discount: number;
   finalPrice: number;
@@ -47,7 +47,7 @@ export interface Booking {
   price: number;
   totalAmount: number;
   createdAt: string;
-  details: BookingDetail[];
+  services: BookingDetail[];
   customer?: {
     fullName: string;
     email: string;
@@ -149,6 +149,11 @@ export interface BookingsResponse {
   };
   message: string;
   success: boolean;
+}
+
+export interface Staff {
+  id: number;
+  fullName: string;
 }
 
 /**
@@ -345,7 +350,7 @@ export const bookingService = {
   /**
  * Get detailed booking information
  */
-  getBookingDetail: async (bookingId: number): Promise<Booking> => {
+  getBookingDetail: async (bookingId: number): Promise<any> => {
     const response = await api.get<any>(`/bookings/${bookingId}/booking`, {
       headers: createAuthHeader()
     });

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star } from 'lucide-react';
@@ -16,32 +15,32 @@ const testimonials = [
     name: 'Sarah Johnson',
     image: 'https://randomuser.me/api/portraits/women/32.jpg',
     rating: 5,
-    text: 'Booking through Harmony has completely changed how I schedule my spa appointments. The interface is intuitive and I love being able to see reviews before booking.',
-    service: 'Spa Treatment',
+    text: 'Đặt lịch qua Harmony đã hoàn toàn thay đổi cách tôi lên lịch các buổi spa. Giao diện trực quan và tôi thích có thể xem đánh giá trước khi đặt lịch.',
+    service: 'Điều Trị Spa',
   },
   {
     id: 2,
     name: 'Michael Chen',
     image: 'https://randomuser.me/api/portraits/men/36.jpg',
     rating: 5,
-    text: 'As someone with a busy schedule, Harmony makes it so easy to find and book services that fit into my calendar. The reminders are also super helpful!',
-    service: 'Haircut & Styling',
+    text: 'Là người có lịch trình bận rộn, Harmony giúp tôi dễ dàng tìm và đặt các dịch vụ phù hợp với lịch của mình. Các nhắc nhở cũng rất hữu ích!',
+    service: 'Cắt & Tạo Kiểu Tóc',
   },
   {
     id: 3,
     name: 'Alexis Rivera',
     image: 'https://randomuser.me/api/portraits/women/44.jpg',
     rating: 4,
-    text: 'I discovered some amazing local salons through Harmony that I wouldn\'t have found otherwise. The booking process is seamless and customer service is excellent.',
-    service: 'Manicure & Pedicure',
+    text: 'Tôi đã khám phá ra một số tiệm salon địa phương tuyệt vời thông qua Harmony mà tôi không thể tìm thấy bằng cách khác. Quy trình đặt lịch rất mượt mà và dịch vụ khách hàng xuất sắc.',
+    service: 'Làm Móng Tay & Chân',
   },
   {
     id: 4,
     name: 'David Williams',
     image: 'https://randomuser.me/api/portraits/men/62.jpg',
     rating: 5,
-    text: 'The convenience of managing all my wellness appointments in one place is fantastic. I particularly appreciate being able to reschedule with just a few taps.',
-    service: 'Massage Therapy',
+    text: 'Sự tiện lợi khi quản lý tất cả các cuộc hẹn chăm sóc sức khỏe của tôi ở một nơi thật tuyệt vời. Tôi đặc biệt đánh giá cao việc có thể đổi lịch chỉ với một vài cú chạm.',
+    service: 'Liệu Pháp Massage',
   },
 ];
 
@@ -82,9 +81,9 @@ const Testimonials = () => {
     <section className="py-16 bg-accent">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">What Our Users Say</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Khách Hàng Nói Gì Về Chúng Tôi</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Read testimonials from customers who have used Harmony to book their services
+            Đọc đánh giá từ khách hàng đã sử dụng Harmony để đặt lịch dịch vụ
           </p>
         </div>
         

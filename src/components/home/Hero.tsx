@@ -14,12 +14,14 @@ import { useQuery } from '@tanstack/react-query';
 import { locationService } from '@/api/services/locationService';
 import { serviceCategoryService } from '@/api/services/serviceCategoryService';
 import { CommandDialog, CommandInput, CommandList, CommandGroup, CommandItem } from '@/components/ui/command';
+import { useDebounce } from 'use-debounce';
 
 const Hero = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [locationsOpen, setLocationsOpen] = useState(false);
   const [citySearchQuery, setCitySearchQuery] = useState('');
+  const [debouncedCitySearchQuery] = useDebounce(citySearchQuery, 1000);
   const citySearchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -31,19 +33,19 @@ const Hero = () => {
 
   // Get filtered cities from the API based on search query
   const { data: filteredProvinces = [], isLoading: isLoadingCities } = useQuery({
-    queryKey: ['filteredCities', citySearchQuery],
+    queryKey: ['filteredCities', debouncedCitySearchQuery],
     queryFn: async () => {
-      if (!citySearchQuery || citySearchQuery.length < 1) return [];
-      
+      if (!debouncedCitySearchQuery || debouncedCitySearchQuery.length < 1) return [];
+  
       try {
-        const response = await locationService.getProvinces({ query: citySearchQuery });
+        const response = await locationService.getProvinces({ query: debouncedCitySearchQuery });
         return response.data;
       } catch (error) {
         console.error('Error searching cities:', error);
         return [];
       }
     },
-    enabled: citySearchQuery.length >= 1
+    enabled: debouncedCitySearchQuery.length >= 1
   });
 
   // Map filtered provinces to just city names for display
@@ -103,11 +105,12 @@ const Hero = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-harmony-800 to-harmony-600">
-            Book Wellness Services with Ease
+            {/* Đặt Dịch Vụ Làm Đẹp Và Chăm Sóc Sức Khỏe Dễ Dàng */}
+            Sức khỏe và Làm Đẹp
           </h1>
           <p className="text-lg md:text-xl mb-8 text-foreground/80">
-            Discover and schedule spa, salon, and wellness services all in one place.
-            Book appointments that fit your schedule.
+            Khám phá và lên lịch các dịch vụ spa, salon và chăm sóc sức khỏe tại một nơi.
+            Đặt lịch hẹn phù hợp với thời gian của bạn.
           </p>
           
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-2xl mx-auto mb-8">
@@ -117,7 +120,7 @@ const Hero = () => {
                   <Search size={18} className="text-muted-foreground mr-2" />
                   <Input 
                     type="text" 
-                    placeholder="What service are you looking for?"
+                    placeholder="Bạn đang tìm dịch vụ gì?"
                     className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -133,25 +136,24 @@ const Hero = () => {
                     <SelectTrigger className="h-full">
                       <div className="flex items-center">
                         <MapPin size={18} className="text-muted-foreground mr-2" />
-                        <SelectValue placeholder="Location" />
+                        <SelectValue placeholder="Địa điểm" />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
                       <div className="p-2">
                         <Input
-                          placeholder="Search location..."
-                          value={citySearchQuery}
-                          onChange={(e) => setCitySearchQuery(e.target.value)}
-                          className="mb-2"
-                          ref={citySearchInputRef}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        placeholder="Tìm địa điểm..."
+                        value={citySearchQuery}
+                        onChange={(e) => setCitySearchQuery(e.target.value)}
+                        className="mb-2"
+                        onClick={(e) => e.stopPropagation()}
+                      />
                       </div>
-                      <SelectItem value="all_locations">All Locations</SelectItem>
+                      <SelectItem value="all_locations">Tất cả địa điểm</SelectItem>
                       {isLoadingCities ? (
-                        <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
+                        <div className="p-2 text-center text-sm text-muted-foreground">Đang tải...</div>
                       ) : citiesToDisplay.length === 0 ? (
-                        <div className="p-2 text-center text-sm text-muted-foreground">No locations found</div>
+                        <div className="p-2 text-center text-sm text-muted-foreground">Không tìm thấy địa điểm</div>
                       ) : (
                         citiesToDisplay.map((city) => (
                           <SelectItem key={city} value={city || `city-${Math.random()}`}>{city}</SelectItem>
@@ -162,7 +164,7 @@ const Hero = () => {
                 </div>
               </div>
               <Button size="lg" onClick={handleSearch} className="w-full">
-                Search
+                Tìm Kiếm
               </Button>
             </div>
           </div>

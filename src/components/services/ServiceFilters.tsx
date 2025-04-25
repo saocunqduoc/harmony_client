@@ -56,8 +56,6 @@ const ServiceFilters = ({
     queryFn: async () => {
       return await locationService.getProvinces({
         query: citySearchTerm,
-        page: 1,
-        size: 50
       });
     },
     keepPreviousData: true,

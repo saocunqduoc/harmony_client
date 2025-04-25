@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -20,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const BusinessProfile = () => {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const [business, setBusiness] = useState<Business | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([]);
@@ -49,7 +48,7 @@ const BusinessProfile = () => {
       try {
         setIsLoading(true);
         const businessData = await businessService.getBusinessById(id);
-        setBusiness(businessData);
+        setBusiness(businessData.data || businessData);
         
         // Fetch business hours
         try {
@@ -181,6 +180,19 @@ const BusinessProfile = () => {
   };
   
   const { openHours, closedDays } = formatBusinessHours();
+
+  const calculateDisplayPrice = (price: number, discount?: number, discountType?: string) => {
+    if (!discount || discount === 0) return price;
+    
+    if (discountType === 'percentage' || discountType === 'percent') {
+      return price * (1 - discount / 100);
+    } else if (discountType === 'fixed') {
+      return price - discount;
+    }
+    
+    return price;
+  };
+
   
   // Display loading state
   if (isLoading) {
@@ -285,22 +297,43 @@ const BusinessProfile = () => {
       <main className="flex-1">
         {/* Cover Image */}
         <div className="h-64 md:h-80 w-full relative">
-          <div className="w-full h-full bg-gradient-to-r from-gray-700 to-gray-900"></div>
+          {business.coverImage ? (
+            <img 
+              src={business.coverImage} 
+              alt={`${business.name} cover`} 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-gray-700 to-gray-900"></div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-0 left-0 p-6 text-white">
-            <h1 className="text-3xl md:text-4xl font-bold">{business.name}</h1>
-            <div className="flex items-center mt-2">
-              <div className="flex items-center">
-                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-1" />
-                <span className="font-medium">4.5</span>
-                <span className="ml-1">(24 đánh giá)</span>
-              </div>
-              {business.city && (
-                <div className="flex items-center ml-4">
-                  <MapPin size={18} className="mr-1" />
-                  <span>{business.city}</span>
+            <div className="flex items-center">
+              {business.logo && (
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg mr-4">
+                  <img 
+                    src={business.logo} 
+                    alt={`${business.name} logo`} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold">{business.name}</h1>
+                <div className="flex items-center mt-2">
+                  <div className="flex items-center">
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-1" />
+                    <span className="font-medium">4.5</span>
+                    <span className="ml-1">(24 đánh giá)</span>
+                  </div>
+                  {business.city && (
+                    <div className="flex items-center ml-4">
+                      <MapPin size={18} className="mr-1" />
+                      <span>{business.city}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -339,7 +372,7 @@ const BusinessProfile = () => {
                                 <span>
                                   {hours.openTime} - {hours.closeTime}
                                 </span>
-                              ) : null}
+                              ) : 'Tất cả các ngày trong tuần'}
                             </div>
                           ))
                         ) : (
@@ -516,7 +549,7 @@ const BusinessProfile = () => {
                               <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-semibold">{service.name}</h3>
                                 <span className="font-bold text-primary">
-                                  {formatCurrency(service.price)}
+                                  {Math.round(service.price).toLocaleString('vi-VN')} VND
                                 </span>
                               </div>
                               <div className="flex justify-between text-sm text-muted-foreground">

@@ -47,6 +47,7 @@ const AdminBusinesses = () => {
   const updateBusinessStatusMutation = useMutation({
     mutationFn: async ({ businessId, newStatus }: { businessId: number; newStatus: string }) => {
       // This would be a real API call in a complete implementation
+      return await adminService.updateBusinessStatus(businessId, newStatus);
       // For now, let's simulate success
       return { success: true };
     },
@@ -150,7 +151,7 @@ const AdminBusinesses = () => {
                     businesses.map((business: BusinessInfo) => (
                       <tr key={business.id} className="border-b last:border-0 hover:bg-muted/50">
                         <td className="py-3 px-4 font-medium">{business.name}</td>
-                        <td className="py-3 px-4">{business.owner?.name || "N/A"}</td>
+                        <td className="py-3 px-4">{business.owner?.fullName || "N/A"}</td>
                         <td className="py-3 px-4">{business.email || business.owner?.email}</td>
                         <td className="py-3 px-4">{business.address}</td>
                         <td className="py-3 px-4">

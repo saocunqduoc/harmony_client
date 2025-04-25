@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { reviewService } from '@/api/services/reviewService';
@@ -64,32 +63,39 @@ const ServiceReviews: React.FC<ServiceReviewsProps> = ({ serviceId, businessId }
 
   // Fetch service reviews if serviceId is provided
   const {
-    data: serviceReviews,
+    data: serviceReviewsData,
     isLoading: isServiceReviewsLoading,
     error: serviceReviewsError
   } = useQuery({
     queryKey: ['serviceReviews', serviceId, page],
-    queryFn: () => reviewService.getServiceReviews(serviceId, { page, limit: 5 }),
+    queryFn: () => reviewService.getServiceReviews(serviceId, { page, limit: 3 }),
     enabled: !!serviceId,
   });
 
   // Fetch business reviews if businessId is provided
   const {
-    data: businessReviews,
+    data: businessReviewsData,
     isLoading: isBusinessReviewsLoading,
     error: businessReviewsError
   } = useQuery({
     queryKey: ['businessReviews', businessId, page],
-    queryFn: () => reviewService.getBusinessReviews({ page, limit: 5, businessId: businessId?.toString() }),
+    queryFn: () => reviewService.getBusinessReviews(businessId || 0, { page }),
     enabled: !!businessId,
   });
 
+  // Debug reviews data
+  console.log('Service reviews data:', serviceReviewsData);
+  
   const isLoading = isServiceReviewsLoading || isBusinessReviewsLoading;
   const error = serviceReviewsError || businessReviewsError;
   
-  // Use the appropriate data based on what we're fetching
-  const reviews = businessId ? businessReviews?.reviews : serviceReviews?.reviews || [];
-  const totalPages = businessId ? businessReviews?.totalPages : serviceReviews?.totalPages || 1;
+  // Extract the reviews data correctly from the response
+  const reviews = businessId 
+    ? (businessReviewsData?.data?.reviews || []) 
+    : (serviceReviewsData?.data?.reviews || []);
+  const totalPages = businessId 
+    ? (businessReviewsData?.data?.totalPages || 1) 
+    : (serviceReviewsData?.data?.totalPages || 1);
   
   const getInitials = (name: string = '') => {
     return name
@@ -113,6 +119,19 @@ const ServiceReviews: React.FC<ServiceReviewsProps> = ({ serviceId, businessId }
         ))}
       </div>
     );
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Invalid date format:', dateString);
+      return 'Không xác định';
+    }
   };
 
   if (isLoading) {
@@ -152,7 +171,7 @@ const ServiceReviews: React.FC<ServiceReviewsProps> = ({ serviceId, businessId }
 
   return (
     <div>
-      {reviews.map((review) => (
+      {reviews.map((review: any) => (
         <Card key={review.id} className="mb-4">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
@@ -172,7 +191,7 @@ const ServiceReviews: React.FC<ServiceReviewsProps> = ({ serviceId, businessId }
                     {renderStars(review.rating)}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {new Date(review.createdAt || review.date).toLocaleDateString()}
+                    {formatDate(review.createdAt)}
                   </div>
                 </div>
                 <p className="mt-2 text-gray-700">{review.comment}</p>

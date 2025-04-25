@@ -142,18 +142,18 @@ const Navbar = () => {
           
           {/* Desktop search & actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="relative w-60">
+            {/* <div className="relative w-60">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Tìm dịch vụ..."
                 className="w-full rounded-full bg-background pl-8 pr-4 focus-visible:ring-primary"
               />
-            </div>
+            </div> */}
             
             {isAuthenticated && user ? (
               <div className="flex items-center space-x-3">
-                {showBookings && (
+                {/* {showBookings && (
                   <Link to="/user/bookings">
                     <Button variant="ghost" size="icon" className="relative" aria-label="Lịch hẹn">
                       <Calendar size={18} />
@@ -162,15 +162,15 @@ const Navbar = () => {
                       </Badge>
                     </Button>
                   </Link>
-                )}
+                )} */}
                 
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  {/* <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative" aria-label="Thông báo">
                       <Bell className="h-5 w-5" />
                       <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
                     </Button>
-                  </DropdownMenuTrigger>
+                  </DropdownMenuTrigger> */}
                   <DropdownMenuContent align="end" className="w-80">
                     <DropdownMenuLabel>Thông báo</DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -333,7 +333,7 @@ const Navbar = () => {
         </div>
         
         {/* Mobile search bar - collapsible */}
-        {isMobileSearchOpen && (
+        {/* {isMobileSearchOpen && (
           <div className="md:hidden py-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -345,7 +345,7 @@ const Navbar = () => {
               />
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </nav>
   );

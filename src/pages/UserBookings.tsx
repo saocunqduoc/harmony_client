@@ -206,7 +206,7 @@ const UserBookings = () => {
   };
 
   const handleNavigateToReview = (bookingId: number) => {
-    navigate(`/review/booking/${bookingId}`);
+    navigate(`/booking/${bookingId}/review`);
   };
 
   const filteredBookingDates = bookingDates.filter(date => {

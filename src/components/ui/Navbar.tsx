@@ -97,22 +97,22 @@ const Navbar = () => {
         {/* Search Bar - Only on larger screens */}
         <div className="hidden md:block flex-1 max-w-md mx-6">
           <form onSubmit={handleSearch} className="relative">
-            <Input
+            {/* <Input
               type="search"
               placeholder="Tìm kiếm dịch vụ, cửa hàng..."
               className="w-full pl-4 pr-10"
               value={searchTerm}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
-            />
-            <Button 
+            /> */}
+            {/* <Button 
               type="submit" 
               variant="ghost" 
               size="icon" 
               className="absolute right-0 top-0 h-full"
             >
               <Search className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </form>
         </div>
         
@@ -123,7 +123,7 @@ const Navbar = () => {
           
           {isAuthenticated && user ? (
             <>
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
@@ -139,7 +139,7 @@ const Navbar = () => {
                     </div>
                   </div>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -218,22 +218,22 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden py-4 px-4 space-y-4 border-t">
           <form onSubmit={handleSearch} className="relative mb-4">
-            <Input
+            {/* <Input
               type="search"
               placeholder="Tìm kiếm dịch vụ, cửa hàng..."
               className="w-full pl-4 pr-10"
               value={searchTerm}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
-            />
-            <Button 
+            /> */}
+            {/* <Button 
               type="submit" 
               variant="ghost" 
               size="icon" 
               className="absolute right-0 top-0 h-full"
             >
               <Search className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </form>
           
           <div className="flex flex-col space-y-2">

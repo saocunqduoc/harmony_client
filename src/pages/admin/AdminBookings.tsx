@@ -67,6 +67,11 @@ const AdminBookings = () => {
   };
   
   const handleFilterChange = (key: string, value: string | number) => {
+    // Special handling for status filter - convert 'all' to empty string for API
+    if (key === 'status' && value === 'all') {
+      value = '';
+    }
+    
     setFilters(prev => ({
       ...prev,
       [key]: value,
@@ -109,6 +114,10 @@ const AdminBookings = () => {
         return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Đã hoàn thành</Badge>;
       case 'cancelled':
         return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Đã hủy</Badge>;
+      case 'draft':
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Nháp</Badge>;
+      case 'no_show':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Không đến</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -116,6 +125,16 @@ const AdminBookings = () => {
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  };
+  
+  // Check if bookings data is available and has the correct structure
+  const hasBookings = bookingsData && bookingsData.bookings && Array.isArray(bookingsData.bookings);
+  const bookings = hasBookings ? bookingsData.bookings : [];
+  const totalPages = bookingsData?.totalPages || 0;
+  
+  // Get the display value for the status filter
+  const getStatusDisplayValue = () => {
+    return filters.status || 'all';
   };
   
   return (
@@ -151,18 +170,20 @@ const AdminBookings = () => {
             
             <div>
               <Select 
-                value={filters.status as string} 
+                value={getStatusDisplayValue()} 
                 onValueChange={(value) => handleFilterChange('status', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tất cả trạng thái</SelectItem>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
                   <SelectItem value="pending">Chờ xác nhận</SelectItem>
                   <SelectItem value="confirmed">Đã xác nhận</SelectItem>
                   <SelectItem value="completed">Đã hoàn thành</SelectItem>
                   <SelectItem value="cancelled">Đã hủy</SelectItem>
+                  <SelectItem value="draft">Nháp</SelectItem>
+                  <SelectItem value="no_show">Không đến</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -209,7 +230,7 @@ const AdminBookings = () => {
             <div className="flex justify-center items-center py-24">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : !bookingsData?.bookings.length ? (
+          ) : !hasBookings || bookings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">Không có lịch hẹn nào</h3>
@@ -246,11 +267,11 @@ const AdminBookings = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bookingsData?.bookings.map((booking) => (
+                    {bookings.map((booking) => (
                       <TableRow key={booking.id}>
                         <TableCell className="font-medium">#{booking.id}</TableCell>
                         <TableCell>
-                          {format(new Date(booking.date), 'dd/MM/yyyy')}
+                          {format(new Date(booking.bookingDate || booking.date), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
                           {booking.startTime} - {booking.endTime}
@@ -260,13 +281,17 @@ const AdminBookings = () => {
                           <div className="text-sm text-muted-foreground">{booking.customer?.email}</div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{booking.businessName}</div>
+                          <div className="font-medium">{booking.business?.name || booking.businessName}</div>
                         </TableCell>
                         <TableCell>{getStatusBadge(booking.status)}</TableCell>
                         <TableCell>
                           {booking.paymentStatus === 'paid' ? (
                             <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
                               Đã thanh toán
+                            </Badge>
+                          ) : booking.paymentStatus === 'failed' ? (
+                            <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">
+                              Thất bại
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
@@ -294,7 +319,7 @@ const AdminBookings = () => {
               </div>
               
               {/* Pagination */}
-              {bookingsData && bookingsData.totalPages > 1 && (
+              {totalPages > 1 && (
                 <div className="flex items-center justify-center space-x-2 py-4">
                   <Button
                     variant="outline"
@@ -305,7 +330,7 @@ const AdminBookings = () => {
                     Trước
                   </Button>
                   <div className="flex items-center space-x-1">
-                    {Array.from({ length: bookingsData.totalPages }, (_, i) => i + 1).map((page) => (
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <Button
                         key={page}
                         variant={Number(filters.page) === page ? "default" : "outline"}
@@ -321,7 +346,7 @@ const AdminBookings = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleFilterChange('page', Number(filters.page) + 1)}
-                    disabled={Number(filters.page) >= bookingsData.totalPages}
+                    disabled={Number(filters.page) >= totalPages}
                   >
                     Sau
                   </Button>

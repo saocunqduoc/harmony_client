@@ -183,7 +183,8 @@ const ServiceDetails = () => {
                 <ServiceBooking 
                   serviceId={serviceId}
                   serviceName={service.name}
-                  price={finalPrice}
+                  price={service.price}
+                  finalPrice={finalPrice}
                   duration={serviceDuration}
                   businessId={numericBusinessId}
                 />

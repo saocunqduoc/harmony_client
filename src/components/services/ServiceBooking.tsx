@@ -22,6 +22,7 @@ interface ServiceBookingProps {
   serviceId: number;
   serviceName: string;
   price: number;  
+  finalPrice: number;
   duration: number;
   businessId: number;
 }
@@ -30,6 +31,7 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
   serviceId, 
   serviceName, 
   price, 
+  finalPrice,
   duration,
   businessId 
 }) => {
@@ -289,10 +291,17 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
           </TabsContent>
         </Tabs>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between">
-        <div>
-          <span className="font-semibold">Giá:</span> {Math.round(price).toLocaleString('vi-VN')} VND
+        <div className="flex flex-col">
+          {price !== finalPrice && (
+            <div className="text-base text-muted-foreground line-through ml-8">
+              {Math.round(price).toLocaleString('vi-VN')} VND
+            </div>
+          )}
+          <div className="font-semibold text-base">
+            Giá: {Math.round(finalPrice).toLocaleString('vi-VN')} VND
+          </div>
         </div>
         <Button 
           onClick={handleBookNow}

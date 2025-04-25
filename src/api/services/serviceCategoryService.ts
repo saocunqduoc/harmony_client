@@ -6,6 +6,7 @@ export interface ServiceCategory {
   name: string;
   description?: string;
   icon?: string;
+  serviceCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,6 +38,17 @@ export const serviceCategoryService = {
     name?: string;
   }): Promise<ServiceCategoryResponse> => {
     const response = await apiClient.get<any>("/service-categories", { params });
+    return response.data?.data || { totalItems: 0, totalPages: 0, currentPage: 1, itemsPerPage: 10, serviceCategories: [] };
+  },
+    /**
+   * Get featured service categories with optional pagination and filtering
+   */
+  getServiceCategories: async (params?: {
+    page?: number;
+    limit?: number;
+    name?: string;
+  }): Promise<ServiceCategoryResponse> => {
+    const response = await apiClient.get<any>("/service-categories/featured", { params });
     return response.data?.data || { totalItems: 0, totalPages: 0, currentPage: 1, itemsPerPage: 10, serviceCategories: [] };
   },
 

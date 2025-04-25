@@ -10,10 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService, UserInfo, PaginationParams } from '@/api/services/adminService';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const AdminUsers = () => {
   const { toast } = useToast();
@@ -23,6 +35,19 @@ const AdminUsers = () => {
   const [status, setStatus] = useState('all');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  
+  // User edit state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserInfo | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    status: 'active'
+  });
+  
+  // Delete confirmation state
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
   // Prepare query params
   const queryParams: PaginationParams = {
@@ -71,6 +96,49 @@ const AdminUsers = () => {
       });
     }
   });
+  
+  // Update user info mutation
+  const updateUserMutation = useMutation({
+    mutationFn: (params: { userId: number; userData: any }) => {
+      return adminService.updateUser(params.userId, params.userData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Thành công",
+        description: "Thông tin người dùng đã được cập nhật"
+      });
+      setIsEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Lỗi",
+        description: error.message || "Không thể cập nhật thông tin người dùng",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId: number) => {
+      return adminService.deleteUser(userId);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Thành công",
+        description: "Người dùng đã được xóa"
+      });
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+    },
+    onError: () => {
+      toast({
+        title: "Lỗi",
+        description: "Không thể xóa người dùng",
+        variant: "destructive"
+      });
+    }
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +149,52 @@ const AdminUsers = () => {
   // Function to handle role change
   const handleRoleChange = (userId: number, newRole: string) => {
     updateUserRoleMutation.mutate({ userId, role: newRole });
+  };
+  
+  // Function to handle user status change
+  const handleStatusChange = (userId: number, newStatus: string) => {
+    updateUserMutation.mutate({ 
+      userId, 
+      userData: { status: newStatus } 
+    });
+  };
+  
+  // Function to open edit dialog
+  const openEditDialog = (user: UserInfo) => {
+    setSelectedUser(user);
+    setEditFormData({
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone || '',
+      status: user.status
+    });
+    setIsEditDialogOpen(true);
+  };
+  
+  // Function to handle form field changes
+  const handleEditFormChange = (field: string, value: string) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  // Function to submit user edit form
+  const handleEditFormSubmit = () => {
+    if (!selectedUser) return;
+    
+    updateUserMutation.mutate({
+      userId: selectedUser.id,
+      userData: editFormData
+    });
+  };
+  
+  // Function to handle user deletion
+  const handleDeleteUser = () => {
+    if (userToDelete !== null) {
+      deleteUserMutation.mutate(userToDelete);
+      setUserToDelete(null);
+    }
   };
 
   // Get users data from the API response
@@ -190,7 +304,17 @@ const AdminUsers = () => {
                   {users.length > 0 ? (
                     users.map((user: UserInfo) => (
                       <tr key={user.id} className="border-b last:border-0 hover:bg-muted/50">
-                        <td className="py-3 px-4 font-medium">{user.fullName}</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            <Avatar className="h-8 w-8 mr-2">
+                              {user.avatar ? (
+                                <AvatarImage src={user.avatar} alt={user.fullName} />
+                              ) : null}
+                              <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{user.fullName}</span>
+                          </div>
+                        </td>
                         <td className="py-3 px-4">{user.email}</td>
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${
@@ -217,6 +341,16 @@ const AdminUsers = () => {
                         <td className="py-3 px-4">{new Date(user.createdAt).toLocaleDateString()}</td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex justify-end space-x-2">
+                            {/* Edit User Button */}
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => openEditDialog(user)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            
+                            {/* Role Dropdown */}
                             <Select 
                               value={user.role}
                               onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
@@ -232,6 +366,54 @@ const AdminUsers = () => {
                                 <SelectItem value="customer">Khách hàng</SelectItem>
                               </SelectContent>
                             </Select>
+                            
+                            {/* Status Toggle */}
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleStatusChange(
+                                user.id, 
+                                user.status === 'active' ? 'inactive' : 'active'
+                              )}
+                              className={user.status === 'active' ? 'text-green-600' : 'text-red-600'}
+                            >
+                              {user.status === 'active' ? (
+                                <UserCheck className="h-4 w-4" />
+                              ) : (
+                                <UserX className="h-4 w-4" />
+                              )}
+                            </Button>
+                            
+                            {/* Delete User Button */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-red-600"
+                                  onClick={() => setUserToDelete(user.id)}
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Bạn có chắc muốn xóa người dùng này?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Thao tác này không thể hoàn tác. Người dùng {user.fullName} sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={handleDeleteUser}
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                  >
+                                    Xóa
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </td>
                       </tr>
@@ -275,6 +457,87 @@ const AdminUsers = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Cập nhật thông tin người dùng</DialogTitle>
+            <DialogDescription>
+              Chỉnh sửa thông tin cá nhân của người dùng này.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="fullName" className="text-right">
+                Họ tên
+              </Label>
+              <Input
+                id="fullName"
+                value={editFormData.fullName}
+                onChange={(e) => handleEditFormChange('fullName', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={editFormData.email}
+                onChange={(e) => handleEditFormChange('email', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Số điện thoại
+              </Label>
+              <Input
+                id="phone"
+                value={editFormData.phone}
+                onChange={(e) => handleEditFormChange('phone', e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">
+                Trạng thái
+              </Label>
+              <div className="flex items-center space-x-2 col-span-3">
+                <Checkbox 
+                  id="active" 
+                  checked={editFormData.status === 'active'}
+                  onCheckedChange={(checked) => {
+                    handleEditFormChange('status', checked ? 'active' : 'inactive');
+                  }}
+                />
+                <Label htmlFor="active">Người dùng đang hoạt động</Label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditDialogOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button 
+              type="submit"
+              onClick={handleEditFormSubmit}
+              disabled={updateUserMutation.isPending}
+            >
+              {updateUserMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Lưu thay đổi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
