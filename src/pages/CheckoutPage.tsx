@@ -64,6 +64,9 @@ const CheckoutPage = () => {
       } else if (paymentMethod === 'zalopay') {
         // If paying by ZaloPay, initialize payment
         console.log('Initializing ZaloPay payment for booking:', bookingIdNumber);
+        // Cập nhật trạng thái bookingDetails => lock
+        await bookingService.confirmBooking(bookingIdNumber);
+        // Khởi tạo thanh toán ZaloPay
         const response = await paymentService.initPayment({
           bookingId: bookingIdNumber,
           method: 'zalopay'

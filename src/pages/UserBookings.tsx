@@ -227,13 +227,13 @@ const UserBookings = () => {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">My Bookings</h1>
+          <h1 className="text-3xl font-bold">Lịch hẹn của tôi</h1>
         </div>
         
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search services or businesses..."
+            placeholder="Tìm kiếm lịch hẹn..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -356,7 +356,7 @@ const UserBookings = () => {
                         ))}
                         
                         <div className="flex justify-between items-center pt-4">
-                          <span className="font-medium">Total Amount:</span>
+                          <span className="font-medium">Tổng tiền:</span>
                           <span className="font-bold">
                             {parseInt(booking.totalAmount).toLocaleString('vi-VN')} VND
                           </span>

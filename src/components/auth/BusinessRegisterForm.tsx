@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,13 +27,13 @@ import { businessService } from '@/api/services/businessService';
 import { locationService } from '@/api/services/locationService';
 
 const businessRegisterSchema = z.object({
-  name: z.string().min(2, 'Business name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email'),
-  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-  address: z.string().min(5, 'Address must be at least 5 characters'),
-  ward: z.string().min(1, 'Please select a ward'),
-  district: z.string().min(1, 'Please select a district'),
-  city: z.string().min(1, 'Please select a city'),
+  name: z.string().min(2, 'Tên doanh nghiệp phải có ít nhất 2 ký tự'),
+  email: z.string().email('Vui lòng nhập một email hợp lệ'),
+  phone: z.string().min(10, 'Số điện thoại phải có ít nhất 10 ký tự'),
+  address: z.string().min(5, 'Địa chỉ phải có ít nhất 5 ký tự'),
+  ward: z.string().min(1, 'Vui lòng chọn phường/xã'),
+  district: z.string().min(1, 'Vui lòng chọn quận/huyện'),
+  city: z.string().min(1, 'Vui lòng chọn tỉnh/thành phố'),
 });
 
 type BusinessRegisterFormValues = z.infer<typeof businessRegisterSchema>;
@@ -61,7 +60,7 @@ const BusinessRegisterForm = () => {
     },
   });
 
-  // Fetch provinces
+  // Lấy danh sách tỉnh/thành phố
   const { data: provincesData } = useQuery({
     queryKey: ['provinces', searchProvinceQuery],
     queryFn: () => locationService.getProvinces({ 
@@ -71,7 +70,7 @@ const BusinessRegisterForm = () => {
     }),
   });
 
-  // Fetch districts based on selected province
+  // Lấy danh sách quận/huyện dựa trên tỉnh/thành phố đã chọn
   const { data: districtsData } = useQuery({
     queryKey: ['districts', selectedProvinceId, searchDistrictQuery],
     queryFn: () => locationService.getDistricts(
@@ -81,7 +80,7 @@ const BusinessRegisterForm = () => {
     enabled: !!selectedProvinceId,
   });
 
-  // Fetch wards based on selected district
+  // Lấy danh sách phường/xã dựa trên quận/huyện đã chọn
   const { data: wardsData } = useQuery({
     queryKey: ['wards', selectedDistrictId, searchWardQuery],
     queryFn: () => locationService.getWards(
@@ -95,12 +94,12 @@ const BusinessRegisterForm = () => {
   const districts = districtsData?.data || [];
   const wards = wardsData?.data || [];
 
-  // Handle province selection
+  // Xử lý khi chọn tỉnh/thành phố
   const handleProvinceChange = (provinceId: number) => {
     setSelectedProvinceId(provinceId);
     setSelectedDistrictId('');
 
-    // Find the province name and set it in the form
+    // Tìm tên tỉnh/thành phố và đặt vào form
     const province = provinces.find(p => p.code === provinceId);
     if (province) {
       form.setValue('city', province.name);
@@ -109,11 +108,11 @@ const BusinessRegisterForm = () => {
     }
   };
 
-  // Handle district selection
+  // Xử lý khi chọn quận/huyện
   const handleDistrictChange = (districtId: number) => {
     setSelectedDistrictId(districtId);
     
-    // Find the district name and set it in the form
+    // Tìm tên quận/huyện và đặt vào form
     const district = districts.find(d => d.code === districtId);
     if (district) {
       form.setValue('district', district.name);
@@ -121,9 +120,9 @@ const BusinessRegisterForm = () => {
     }
   };
 
-  // Handle ward selection
+  // Xử lý khi chọn phường/xã
   const handleWardChange = (wardId: number) => {
-    // Find the ward name and set it in the form
+    // Tìm tên phường/xã và đặt vào form
     const ward = wards.find(w => w.code === wardId);
     if (ward) {
       form.setValue('ward', ward.name);
@@ -134,7 +133,7 @@ const BusinessRegisterForm = () => {
     try {
       setIsLoading(true);
       
-      // Make sure all required values are passed
+      // Đảm bảo tất cả các giá trị cần thiết được truyền vào
       const businessData = {
         name: values.name,
         email: values.email,
@@ -147,15 +146,15 @@ const BusinessRegisterForm = () => {
       
       await businessService.applyBusiness(businessData);
       
-      toast.success('Business registration successful', {
-        description: 'Your business application has been submitted for review. You will be notified when it is approved.'
+      toast.success('Đăng ký doanh nghiệp thành công', {
+        description: 'Đơn đăng ký của bạn đã được gửi để xem xét. Bạn sẽ được thông báo khi đơn được phê duyệt.'
       });
       
       navigate('/businesses');
     } catch (error) {
       console.error('Business registration failed:', error);
-      toast.error('Registration failed', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred'
+      toast.error('Đăng ký thất bại', {
+        description: error instanceof Error ? error.message : 'Đã xảy ra lỗi không mong muốn'
       });
     } finally {
       setIsLoading(false);
@@ -171,9 +170,9 @@ const BusinessRegisterForm = () => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Name</FormLabel>
+                <FormLabel>Tên doanh nghiệp</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your Business Name" {...field} />
+                  <Input placeholder="Tên doanh nghiệp của bạn" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -185,9 +184,9 @@ const BusinessRegisterForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Email</FormLabel>
+                <FormLabel>Email doanh nghiệp</FormLabel>
                 <FormControl>
-                  <Input placeholder="business@example.com" type="email" {...field} />
+                  <Input placeholder="doanhnghiep@example.com" type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -199,9 +198,9 @@ const BusinessRegisterForm = () => {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Phone</FormLabel>
+                <FormLabel>Điện thoại doanh nghiệp</FormLabel>
                 <FormControl>
-                  <Input placeholder="Phone Number" {...field} />
+                  <Input placeholder="Số điện thoại" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -213,9 +212,9 @@ const BusinessRegisterForm = () => {
             name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Address</FormLabel>
+                <FormLabel>Địa chỉ</FormLabel>
                 <FormControl>
-                  <Input placeholder="Street Address" {...field} />
+                  <Input placeholder="Địa chỉ đường phố" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -224,14 +223,14 @@ const BusinessRegisterForm = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormItem>
-              <FormLabel>City</FormLabel>
+              <FormLabel>Tỉnh/Thành phố</FormLabel>
               <Select onValueChange={handleProvinceChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select city" />
+                  <SelectValue placeholder="Chọn tỉnh/thành phố" />
                 </SelectTrigger>
                 <SelectContent>
                   <Input 
-                    placeholder="Search provinces..."
+                    placeholder="Tìm tỉnh/thành phố..."
                     className="mb-2"
                     value={searchProvinceQuery}
                     onChange={(e) => setSearchProvinceQuery(e.target.value)}
@@ -249,17 +248,17 @@ const BusinessRegisterForm = () => {
             </FormItem>
             
             <FormItem>
-              <FormLabel>District</FormLabel>
+              <FormLabel>Quận/Huyện</FormLabel>
               <Select 
                 onValueChange={handleDistrictChange} 
                 disabled={!selectedProvinceId}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select district" />
+                  <SelectValue placeholder="Chọn quận/huyện" />
                 </SelectTrigger>
                 <SelectContent>
                   <Input 
-                    placeholder="Search districts..."
+                    placeholder="Tìm quận/huyện..."
                     className="mb-2"
                     value={searchDistrictQuery}
                     onChange={(e) => setSearchDistrictQuery(e.target.value)}
@@ -277,17 +276,17 @@ const BusinessRegisterForm = () => {
             </FormItem>
             
             <FormItem>
-              <FormLabel>Ward</FormLabel>
+              <FormLabel>Phường/Xã</FormLabel>
               <Select 
                 onValueChange={handleWardChange} 
                 disabled={!selectedDistrictId}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select ward" />
+                  <SelectValue placeholder="Chọn phường/xã" />
                 </SelectTrigger>
                 <SelectContent>
                   <Input 
-                    placeholder="Search wards..."
+                    placeholder="Tìm phường/xã..."
                     className="mb-2"
                     value={searchWardQuery}
                     onChange={(e) => setSearchWardQuery(e.target.value)}
@@ -306,13 +305,13 @@ const BusinessRegisterForm = () => {
           </div>
           
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Submitting...' : 'Apply to Register Business'}
+            {isLoading ? 'Đang gửi...' : 'Đăng ký doanh nghiệp'}
           </Button>
         </form>
       </Form>
       
       <div className="text-sm text-center text-muted-foreground">
-        By applying, your business will be reviewed by our team before approval.
+        Khi đăng ký, doanh nghiệp của bạn sẽ được đội ngũ của chúng tôi xem xét trước khi phê duyệt.
       </div>
     </div>
   );

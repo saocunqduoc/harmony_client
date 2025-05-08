@@ -297,9 +297,9 @@ export const bookingService = {
     }).then(response => {
       // Map totalItems to total for compatibility
       return {
-        bookings: response.bookings,
-        total: response.totalItems,
-        totalPages: response.totalPages
+        bookings: response.data.bookings,
+        total: response.data.totalItems,
+        totalPages: response.data.totalPages
       };
     });
   },

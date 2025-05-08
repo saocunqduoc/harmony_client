@@ -213,7 +213,7 @@ const AdminReviews = () => {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Danh sách đánh giá</CardTitle>
+          {/* <CardTitle className="text-lg">Danh sách đánh giá</CardTitle> */}
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -245,7 +245,7 @@ const AdminReviews = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">
-                              {review.customer?.fullName || 'Người dùng ẩn danh'}
+                              {review.customerName|| 'Người dùng ẩn danh'}
                             </div>
                             <div className="text-sm text-muted-foreground mb-1">
                               {new Date(review.createdAt).toLocaleDateString()}
@@ -258,10 +258,10 @@ const AdminReviews = () => {
                         </div>
                         
                         <h4 className="text-sm font-medium mt-2">
-                          Dịch vụ: {review.service?.name || 'Chưa rõ'}
+                          Dịch vụ: {review.serviceName || 'Chưa rõ'}
                         </h4>
-                        <h4 className="text-sm text-muted-foreground mb-2">
-                          Tại: {review.service?.business?.name || 'Chưa rõ'}
+                        <h4 className="text-sm font-medium mb-2">
+                          Tại: {review.businessName || 'Chưa rõ'}
                         </h4>
                         
                         <p className="text-sm mt-2 border-l-2 border-muted pl-2 py-1">

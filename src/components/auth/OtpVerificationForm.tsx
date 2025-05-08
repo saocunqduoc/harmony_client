@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -24,7 +23,7 @@ import { authService } from '@/api/services/authService';
 import { Loader2 } from 'lucide-react';
 
 const otpVerificationSchema = z.object({
-  otp: z.string().min(6, 'OTP must be 6 characters').max(6),
+  otp: z.string().min(6, 'Mã OTP phải có 6 ký tự').max(6),
 });
 
 type OtpVerificationValues = z.infer<typeof otpVerificationSchema>;
@@ -38,13 +37,13 @@ const OtpVerificationForm = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Get email and type from URL query parameter
+    // Lấy email và loại từ tham số URL
     const params = new URLSearchParams(location.search);
     const emailParam = params.get('email');
     const typeParam = params.get('type');
     
     if (!emailParam) {
-      toast.error('Email is required');
+      toast.error('Email là bắt buộc');
       navigate('/');
       return;
     }
@@ -53,7 +52,7 @@ const OtpVerificationForm = () => {
     setVerificationType(typeParam === 'reset' ? 'reset' : 'registration');
   }, [location, navigate]);
   
-  // Timer effect for resend cooldown
+  // Hiệu ứng hẹn giờ cho thời gian chờ gửi lại
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -72,31 +71,31 @@ const OtpVerificationForm = () => {
     try {
       setIsLoading(true);
       
-      // Convert OTP to string to ensure proper format
+      // Chuyển đổi OTP thành chuỗi để đảm bảo định dạng đúng
       const otpString = values.otp.toString();
       
       if (verificationType === 'reset') {
-        // For password reset flow, use the new verifyOtpForPasswordReset endpoint
+        // Cho luồng đặt lại mật khẩu, sử dụng endpoint verifyOtpForPasswordReset
         await authService.verifyOtpForPasswordReset({
           email,
           otp: otpString,
         });
         
-        toast.success('OTP verified successfully');
+        toast.success('Xác minh OTP thành công');
         navigate(`/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpString)}`);
       } else {
-        // For registration verification flow
+        // Cho luồng xác minh đăng ký
         await authService.verifyOtp({
           email,
           otp: otpString,
         });
         
-        toast.success('Account verification successful');
+        toast.success('Xác minh tài khoản thành công');
         navigate('/login');
       }
     } catch (error) {
       console.error('OTP verification failed:', error);
-      toast.error('OTP verification failed. Please try again.');
+      // toast.error('Xác minh OTP thất bại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -107,13 +106,13 @@ const OtpVerificationForm = () => {
     
     try {
       setIsLoading(true);
-      // Always use forgotPassword for both flows since it sends OTP
+      // Luôn sử dụng forgotPassword cho cả hai luồng vì nó gửi OTP
       await authService.forgotPassword({ email });
-      toast.success('A new OTP has been sent to your email');
-      setCountdown(60); // Set countdown to 60 seconds
+      toast.success('Mã OTP mới đã được gửi đến email của bạn');
+      setCountdown(60); // Đặt đếm ngược là 60 giây
     } catch (error) {
       console.error('Failed to resend OTP:', error);
-      toast.error('Cannot resend OTP. Please try again.');
+      toast.error('Không thể gửi lại OTP. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -122,32 +121,35 @@ const OtpVerificationForm = () => {
   return (
     <div className="max-w-md w-full mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">OTP Verification</h1>
+        <h1 className="text-2xl font-bold">Xác minh OTP</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Enter the 6-digit code sent to {email}
+          Nhập mã 6 chữ số đã gửi đến {email}
         </p>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="otp"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>One-Time Password</FormLabel>
+              <FormItem className="text-center">
+                <FormLabel className="text-center block">Mã xác thực một lần</FormLabel>
                 <FormControl>
-                  <InputOTP 
-                    maxLength={6} 
-                    value={field.value}
-                    onChange={field.onChange}
-                  >
-                    <InputOTPGroup>
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <InputOTPSlot key={i} index={i} />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
+                  <div className="flex justify-center">
+                    <InputOTP 
+                      maxLength={6} 
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="flex justify-center"
+                    >
+                      <InputOTPGroup>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <InputOTPSlot key={i} index={i} />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -158,32 +160,32 @@ const OtpVerificationForm = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                Verifying...
+                Đang xác minh...
               </>
-            ) : 'Verify OTP'}
+            ) : 'Xác minh OTP'}
           </Button>
         </form>
       </Form>
       
       <div className="text-center">
         <p className="text-sm text-muted-foreground">
-          Didn't receive the code? {' '}
+          Không nhận được mã? {' '}
           <Button 
             variant="link" 
-            className="p-0 h-auto" 
+            className="p-0 h-auto text-primary" 
             onClick={handleResendOtp}
             disabled={isLoading || countdown > 0}
           >
-            {countdown > 0 ? `Resend in ${countdown}s` : 'Resend OTP'}
+            {countdown > 0 ? `Gửi lại sau ${countdown}s` : 'Gửi lại OTP'}
           </Button>
         </p>
 
         <Button 
           variant="link" 
-          className="mt-2" 
+          className="mt-2 text-primary" 
           onClick={() => verificationType === 'reset' ? navigate('/forgot-password') : navigate('/register')}
         >
-          {verificationType === 'reset' ? 'Change Email' : 'Back to registration'}
+          {verificationType === 'reset' ? 'Thay đổi Email' : 'Quay lại đăng ký'}
         </Button>
       </div>
     </div>

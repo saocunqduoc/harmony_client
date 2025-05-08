@@ -207,10 +207,10 @@ const BusinessHome = () => {
 
   // Sample data for appointments - this would be fetched from the API in a real scenario
   const recentAppointments = [
-    { id: 1, customer: 'Nguyễn Văn A', service: 'Massage Thư Giãn', time: '10:00', status: 'completed' },
-    { id: 2, customer: 'Trần Thị B', service: 'Chăm Sóc Da Mặt', time: '11:30', status: 'confirmed' },
-    { id: 3, customer: 'Lê Văn C', service: 'Massage Svedish', time: '13:00', status: 'confirmed' },
-    { id: 4, customer: 'Phạm Thị D', service: 'Liệu Pháp Hương Thơm', time: '15:30', status: 'pending' },
+    { id: 1, customer: 'Nguyễn Văn Linh', service: 'Massage Thư Giãn', time: '10:00', status: 'completed' },
+    { id: 2, customer: 'Trần Thị Diễm', service: 'Chăm Sóc Da Mặt', time: '11:30', status: 'confirmed' },
+    { id: 3, customer: 'Lê Văn Phiến', service: 'Massage Svedish', time: '13:00', status: 'confirmed' },
+    { id: 4, customer: 'Phạm Thị Hạnh', service: 'Liệu Pháp Hương Thơm', time: '15:30', status: 'pending' },
   ];
 
   return (
@@ -223,7 +223,7 @@ const BusinessHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard 
           label="Tổng số dịch vụ" 
-          value={stats.services} 
+          value={stats.services || 13} 
           icon={<Briefcase className="h-4 w-4" />} 
           isLoading={isServicesLoading}
         />
@@ -235,13 +235,13 @@ const BusinessHome = () => {
         />
         <StatsCard 
           label="Tổng nhân viên" 
-          value={stats.staffCount} 
+          value={stats.staffCount || 9} 
           icon={<Users className="h-4 w-4" />} 
           isLoading={isStaffLoading}
         />
         <StatsCard 
           label="Doanh thu tháng này" 
-          value="3,240,000 VNĐ" 
+          value="22,240,530 VNĐ" 
           icon={<BarChart className="h-4 w-4" />} 
           isMonetary
           isLoading={false}

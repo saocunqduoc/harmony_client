@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApi } from '@/hooks/use-api';
 import { bookingService, Booking, BookingFilters } from '@/api/services/bookingService';
 import { format } from 'date-fns';
@@ -35,6 +35,9 @@ import {
 import BookingDetailsModal from '@/components/business/BookingDetailsModal';
 
 const AdminBookings = () => {
+  // Tham chiếu để theo dõi khi nào cần refetch thủ công
+  const shouldRefetch = useRef(false);
+  
   const [filters, setFilters] = useState<BookingFilters>({
     search: '',
     status: '',
@@ -49,21 +52,28 @@ const AdminBookings = () => {
   
   const { apiQuery } = useApi();
   
+  // Sử dụng tham số filters trực tiếp trong queryKey thay vì JSON.stringify
   const { 
     data: bookingsData, 
     isLoading, 
     refetch 
   } = apiQuery(
-    ['adminBookings', JSON.stringify(filters)],
-    () => bookingService.getAllBookings(filters),
-    {
-      placeholderData: (previousData) => previousData
-    }
+    ['adminBookings', filters.page, filters.limit, filters.search, filters.status, filters.date, filters.sort, filters.sortBy],
+    () => bookingService.getAllBookings(filters)
   );
+  
+  // Đảm bảo refetch được gọi khi filters thay đổi
+  useEffect(() => {
+    if (shouldRefetch.current) {
+      refetch();
+      shouldRefetch.current = false;
+    }
+  }, [refetch, filters]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    refetch();
+    shouldRefetch.current = true;
+    setFilters(prev => ({ ...prev }));
   };
   
   const handleFilterChange = (key: string, value: string | number) => {
@@ -72,14 +82,43 @@ const AdminBookings = () => {
       value = '';
     }
     
+    shouldRefetch.current = true;
     setFilters(prev => ({
       ...prev,
       [key]: value,
-      page: key !== 'page' ? 1 : prev.page
+      // Nếu thay đổi bất kỳ bộ lọc nào ngoài trang, reset về trang 1
+      page: key !== 'page' ? 1 : value
+    }));
+  };
+  
+  const handleNextPage = () => {
+    const nextPage = Math.min(totalPages, Number(filters.page) + 1);
+    shouldRefetch.current = true;
+    setFilters(prev => ({
+      ...prev,
+      page: nextPage
+    }));
+  };
+  
+  const handlePrevPage = () => {
+    const prevPage = Math.max(1, Number(filters.page) - 1);
+    shouldRefetch.current = true;
+    setFilters(prev => ({
+      ...prev,
+      page: prevPage
+    }));
+  };
+  
+  const handlePageSelect = (pageNumber: number) => {
+    shouldRefetch.current = true;
+    setFilters(prev => ({
+      ...prev,
+      page: pageNumber
     }));
   };
   
   const handleClearFilters = () => {
+    shouldRefetch.current = true;
     setFilters({
       search: '',
       status: '',
@@ -92,6 +131,7 @@ const AdminBookings = () => {
   };
   
   const handleSort = (column: string) => {
+    shouldRefetch.current = true;
     setFilters(prev => ({
       ...prev,
       sortBy: column,
@@ -126,7 +166,28 @@ const AdminBookings = () => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   };
-  
+
+  // Hàm để định dạng thời gian, chỉ lấy giờ và phút
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
+    
+    // Nếu thời gian đã ở định dạng "HH:MM" thì trả về nguyên bản
+    if (/^\d{1,2}:\d{2}$/.test(timeString)) return timeString;
+    
+    // Nếu thời gian ở định dạng ISO hoặc có chứa thông tin khác
+    try {
+      const date = new Date(timeString);
+      if (isNaN(date.getTime())) {
+        // Nếu không phải ngày hợp lệ, xem như là string "HH:MM:SS" và cắt bỏ phần giây
+        return timeString.split(':').slice(0, 2).join(':');
+      }
+      return date.getHours().toString().padStart(2, '0') + ':' + 
+             date.getMinutes().toString().padStart(2, '0');
+    } catch (e) {
+      return timeString;
+    }
+  };
+
   // Check if bookings data is available and has the correct structure
   const hasBookings = bookingsData && bookingsData.bookings && Array.isArray(bookingsData.bookings);
   const bookings = hasBookings ? bookingsData.bookings : [];
@@ -274,7 +335,7 @@ const AdminBookings = () => {
                           {format(new Date(booking.bookingDate || booking.date), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
-                          {booking.startTime} - {booking.endTime}
+                          {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                         </TableCell>
                         <TableCell>
                           <div className="font-medium">{booking.customer?.fullName}</div>
@@ -324,28 +385,48 @@ const AdminBookings = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleFilterChange('page', Number(filters.page) - 1)}
+                    onClick={handlePrevPage}
                     disabled={Number(filters.page) <= 1}
                   >
                     Trước
                   </Button>
                   <div className="flex items-center space-x-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={Number(filters.page) === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleFilterChange('page', page)}
-                        className="w-9"
-                      >
-                        {page}
-                      </Button>
-                    ))}
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      // Tính toán số trang để hiển thị xung quanh trang hiện tại
+                      let currentPage = Number(filters.page);
+                      let pageToShow;
+                      
+                      if (totalPages <= 5) {
+                        // Nếu có 5 trang trở xuống, hiển thị tất cả
+                        pageToShow = i + 1;
+                      } else if (currentPage <= 3) {
+                        // Nếu đang ở trang đầu, hiển thị 1-5
+                        pageToShow = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        // Nếu đang ở trang cuối, hiển thị totalPages-4 đến totalPages
+                        pageToShow = totalPages - 4 + i;
+                      } else {
+                        // Hiển thị 2 trang trước và sau trang hiện tại
+                        pageToShow = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageToShow}
+                          variant={Number(filters.page) === pageToShow ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageSelect(pageToShow)}
+                          className="w-9"
+                        >
+                          {pageToShow}
+                        </Button>
+                      );
+                    })}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleFilterChange('page', Number(filters.page) + 1)}
+                    onClick={handleNextPage}
                     disabled={Number(filters.page) >= totalPages}
                   >
                     Sau

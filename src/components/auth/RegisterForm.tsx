@@ -20,11 +20,11 @@ import { useApiAuth } from '@/context/ApiAuthContext';
 import { toast } from 'sonner';
 
 const registerSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
+  email: z.string().email('Vui lòng nhập một email hợp lệ'),
+  password: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự'),
   acceptTerms: z.boolean().refine(val => val === true, {
-    message: 'You must accept the terms and conditions',
+    message: 'Bạn phải chấp nhận điều khoản và điều kiện',
   }),
 });
 
@@ -56,22 +56,22 @@ const RegisterForm = () => {
       );
       
       if (success) {
-        toast.success("Registration successful", {
-          description: "Please check your email for verification instructions.",
+        toast.success("Đăng ký thành công", {
+          description: "Vui lòng kiểm tra email của bạn để nhận hướng dẫn xác minh.",
         });
         
-        // Include only email in query params, no reset param (which would indicate password reset flow)
+        // Thêm email vào query params, không có param reset (vốn dùng cho luồng đặt lại mật khẩu)
         navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`);
       } else {
-        toast.error("Registration failed", {
-          description: "Please try again or contact support.",
-        });
+        // toast.error("Đăng ký thất bại", {
+        //   description: "Vui lòng thử lại hoặc liên hệ hỗ trợ.",
+        // });
       }
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error("Registration failed", {
-        description: "An unexpected error occurred. Please try again later.",
-      });
+      // toast.error("Đăng ký thất bại", {
+      //   description: "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
+      // });
     } finally {
       setIsSubmitting(false);
     }
@@ -86,9 +86,9 @@ const RegisterForm = () => {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel>Họ và tên</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder="Nguyễn Văn A" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -102,7 +102,7 @@ const RegisterForm = () => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com" {...field} />
+                  <Input placeholder="email@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,7 +114,7 @@ const RegisterForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Mật khẩu</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input 
@@ -135,7 +135,7 @@ const RegisterForm = () => {
                         <Eye className="h-4 w-4" />
                       )}
                       <span className="sr-only">
-                        {showPassword ? "Hide password" : "Show password"}
+                        {showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                       </span>
                     </Button>
                   </div>
@@ -158,13 +158,13 @@ const RegisterForm = () => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    I agree to the{" "}
+                    Tôi đồng ý với{" "}
                     <Link to="/terms" className="text-primary hover:underline">
-                      Terms of Service
+                      Điều khoản dịch vụ
                     </Link>
-                    {" "}and{" "}
+                    {" "}và{" "}
                     <Link to="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
+                      Chính sách bảo mật
                     </Link>
                   </FormLabel>
                   <FormMessage />
@@ -174,16 +174,16 @@ const RegisterForm = () => {
           />
           
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing up...' : 'Sign up'}
+            {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
           </Button>
         </form>
       </Form>
       
       <div className="mt-6 text-center">
         <p className="text-sm text-muted-foreground">
-          Already have an account?{" "}
+          Bạn đã có tài khoản?{" "}
           <Link to="/login" className="text-primary hover:underline">
-            Log in
+            Đăng nhập
           </Link>
         </p>
       </div>

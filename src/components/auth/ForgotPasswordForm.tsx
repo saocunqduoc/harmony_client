@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -20,7 +19,7 @@ import {
 import { authService } from '@/api/services/authService';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: z.string().email('Vui lòng nhập địa chỉ email hợp lệ'),
 });
 
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
@@ -41,15 +40,15 @@ const ForgotPasswordForm = () => {
       setIsLoading(true);
       await authService.forgotPassword({ email: values.email });
       
-      toast.success('Reset instructions sent', {
-        description: 'Please check your email for the OTP code'
+      toast.success('Hướng dẫn đặt lại đã được gửi', {
+        description: 'Vui lòng kiểm tra email của bạn để lấy mã OTP'
       });
       
-      // Navigate to OTP verification screen with email parameter and reset flow identifier
+      // Chuyển hướng đến màn hình xác minh OTP với tham số email và định danh luồng đặt lại
       navigate(`/verify-otp?email=${encodeURIComponent(values.email)}&type=reset`);
     } catch (error) {
       console.error('Password reset request failed:', error);
-      toast.error('Failed to send reset instructions. Please try again.');
+      toast.error('Không thể gửi hướng dẫn đặt lại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -58,9 +57,9 @@ const ForgotPasswordForm = () => {
   return (
     <div className="max-w-md w-full mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">Forgot Your Password?</h1>
+        <h1 className="text-2xl font-bold">Quên mật khẩu?</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Enter your email and we'll send you an OTP to reset your password
+          Nhập email của bạn và chúng tôi sẽ gửi cho bạn mã OTP để đặt lại mật khẩu
         </p>
       </div>
 
@@ -76,7 +75,7 @@ const ForgotPasswordForm = () => {
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="yourname@example.com"
+                      placeholder="email@example.com"
                       className="pl-10"
                       {...field}
                     />
@@ -88,14 +87,14 @@ const ForgotPasswordForm = () => {
           />
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Sending...' : 'Send Reset Instructions'}
+            {isLoading ? 'Đang gửi...' : 'Gửi hướng dẫn đặt lại'}
           </Button>
         </form>
       </Form>
       
       <div className="text-center">
         <Button variant="link" onClick={() => navigate('/login')}>
-          Back to Login
+          Quay lại đăng nhập
         </Button>
       </div>
     </div>

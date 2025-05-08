@@ -10,9 +10,9 @@ const Register = () => {
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
+          <h1 className="text-2xl font-bold mb-2">Tạo tài khoản mới</h1>
           <p className="text-muted-foreground">
-            Join Harmony to book and manage your beauty and wellness appointments
+            Tham gia cùng chúng tôi để trải nghiệm dịch vụ đặt lịch dễ dàng và tiện lợi hơn.
           </p>
         </div>
         <RegisterForm />

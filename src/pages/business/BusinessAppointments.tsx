@@ -183,7 +183,7 @@ const BusinessAppointments = () => {
   return (
     <div className="container px-4 pb-8 pt-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Lịch hẹn của bạn</h1>
+        <h1 className="text-2xl font-bold">Lịch hẹn</h1>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" onClick={handlePreviousDay}>
             <ChevronLeft className="h-4 w-4" />

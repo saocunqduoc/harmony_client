@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,15 +20,15 @@ import { authService } from '@/api/services/authService';
 
 const resetPasswordSchema = z.object({
   password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must include at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must include at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must include at least one number'),
+    .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+    .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất một chữ hoa')
+    .regex(/[a-z]/, 'Mật khẩu phải có ít nhất một chữ thường')
+    .regex(/[0-9]/, 'Mật khẩu phải có ít nhất một chữ số'),
   confirmPassword: z.string()
 }).refine(
   (values) => values.password === values.confirmPassword,
   {
-    message: "Passwords must match",
+    message: "Mật khẩu xác nhận không khớp",
     path: ["confirmPassword"],
   }
 );
@@ -46,13 +45,13 @@ const ResetPasswordForm = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Get email and otp from URL query parameter
+    // Lấy email và otp từ tham số URL
     const params = new URLSearchParams(location.search);
     const emailParam = params.get('email');
     const otpParam = params.get('otp');
     
     if (!emailParam || !otpParam) {
-      toast.error('Invalid or missing email or OTP');
+      toast.error('Email hoặc OTP không hợp lệ hoặc bị thiếu');
       navigate('/forgot-password');
       return;
     }
@@ -78,11 +77,11 @@ const ResetPasswordForm = () => {
         newPassword: values.password,
       });
       
-      toast.success('Password reset successful');
+      toast.success('Đặt lại mật khẩu thành công');
       navigate('/login', { replace: true });
     } catch (error) {
       console.error('Password reset failed:', error);
-      toast.error('Failed to reset password. Please try again.');
+      toast.error('Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -99,9 +98,9 @@ const ResetPasswordForm = () => {
   return (
     <div className="max-w-md w-full mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">Reset Your Password</h1>
+        <h1 className="text-2xl font-bold">Đặt lại mật khẩu</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Please create a new secure password for your account
+          Vui lòng tạo mật khẩu mới an toàn cho tài khoản của bạn
         </p>
       </div>
 
@@ -112,12 +111,12 @@ const ResetPasswordForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New Password</FormLabel>
+                <FormLabel>Mật khẩu mới</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Enter new password"
+                      placeholder="Nhập mật khẩu mới"
                       type={showPassword ? "text" : "password"}
                       className="pl-10 pr-10"
                       {...field}
@@ -147,12 +146,12 @@ const ResetPasswordForm = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel>Xác nhận mật khẩu</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Confirm new password"
+                      placeholder="Xác nhận mật khẩu mới"
                       type={showConfirmPassword ? "text" : "password"}
                       className="pl-10 pr-10"
                       {...field}
@@ -178,7 +177,7 @@ const ResetPasswordForm = () => {
           />
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Resetting...' : 'Reset Password'}
+            {isLoading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
           </Button>
         </form>
       </Form>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BarChart as RechartsBarChart,
@@ -25,6 +24,11 @@ interface ChartProps {
   valueFormatter?: (value: number) => string;
   className?: string;
 }
+
+// Hàm định dạng tiền tệ sang VND
+export const formatCurrency = (value: number): string => {
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VND';
+};
 
 export const BarChart = ({ 
   data, 
@@ -74,7 +78,7 @@ export const LineChart = ({
   index, 
   categories, 
   colors, 
-  valueFormatter = (value) => String(value),
+  valueFormatter = (value) => formatCurrency(Number(value)),
   className = 'h-72'
 }: ChartProps) => {
   return (

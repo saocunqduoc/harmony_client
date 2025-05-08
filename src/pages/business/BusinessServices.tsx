@@ -57,7 +57,7 @@ const BusinessServices = () => {
   const { user } = useAuth();
   const { apiQuery, apiMutation, invalidateQueries } = useApi();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit] = useState(7);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);

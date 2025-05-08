@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,8 +19,8 @@ import {
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Vui lòng nhập một email hợp lệ'),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -45,30 +44,30 @@ const LoginForm = () => {
       const { success, role } = await login(values.email, values.password);
       
       if (success) {
-        // Redirect based on user role
+        // Chuyển hướng dựa trên vai trò người dùng
         if (role === 'admin') {
           navigate('/admin');
         } else if (['owner', 'manager', 'staff'].includes(role || '')) {
           navigate('/business-dashboard');
         } else {
-          // Default for customer role
+          // Mặc định cho vai trò customer
           navigate('/dashboard');
         }
         
-        toast.success('Login successful', {
-          description: 'Welcome back!'
+        toast.success('Đăng nhập thành công', {
+          description: 'Chào mừng bạn quay trở lại!'
         });
       } else {
-        setError('Invalid email or password');
-        toast.error('Login failed', {
-          description: 'Please check your credentials and try again'
+        setError('Email hoặc mật khẩu không hợp lệ');
+        toast.error('Đăng nhập thất bại', {
+          description: 'Vui lòng kiểm tra thông tin đăng nhập và thử lại'
         });
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('An error occurred during login');
-      toast.error('Login failed', {
-        description: 'An unexpected error occurred. Please try again.'
+      setError('Đã xảy ra lỗi trong quá trình đăng nhập');
+      toast.error('Đăng nhập thất bại', {
+        description: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.'
       });
     }
   };
@@ -93,7 +92,7 @@ const LoginForm = () => {
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="yourname@example.com"
+                      placeholder="email@example.com"
                       className="pl-10"
                       {...field}
                     />
@@ -110,12 +109,12 @@ const LoginForm = () => {
             render={({ field }) => (
               <FormItem>
                 <div className="flex justify-between items-center">
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Mật khẩu</FormLabel>
                   <Link 
                     to="/forgot-password"
                     className="text-xs text-primary hover:underline"
                   >
-                    Forgot password?
+                    Quên mật khẩu?
                   </Link>
                 </div>
                 <FormControl>
@@ -135,13 +134,13 @@ const LoginForm = () => {
           />
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </Button>
 
           <div className="text-center text-sm">
-            Don't have an account?{' '}
+            Bạn chưa có tài khoản?{' '}
             <Link to="/register" className="text-primary hover:underline">
-              Sign up
+              Đăng ký
             </Link>
           </div>
         </form>

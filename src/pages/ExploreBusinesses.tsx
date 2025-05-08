@@ -7,14 +7,14 @@ const ExploreBusinesses = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Explore Businesses - Harmony Scheduling</title>
+        <title>Khám phá doanh nghiệp - Harmony Scheduling</title>
       </Helmet>
       <Navbar />
       <main className="flex-1">
         <div className="container mx-auto py-8 px-4">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Explore Businesses</h1>
-            <p className="text-gray-600">Discover businesses available for booking services</p>
+            <h1 className="text-3xl font-bold mb-2">Khám phá doanh nghiệp</h1>
+            <p className="text-gray-600">Tìm kiếm doanh nghiệp để đặt lịch dịch vụ</p>
           </div>
           
           <BusinessList />

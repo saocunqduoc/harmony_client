@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Phone, Mail } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -10,43 +10,53 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Harmony</h3>
             <p className="text-muted-foreground mb-4">
-              Book beauty, wellness, and health services with ease.
+              Đặt lịch dịch vụ làm đẹp, sức khỏe và chăm sóc sức khỏe một cách dễ dàng.
             </p>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                <a href="tel:+840123456789" className="text-muted-foreground hover:text-primary">2100009474</a>
+              </div>
+              <div className="flex items-center">
+                <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                <a href="mailto:support@harmony.com" className="text-muted-foreground hover:text-primary">support@harmony.com</a>
+              </div>
+            </div>
           </div>
           
           <div>
-            <h4 className="font-medium mb-4">For Customers</h4>
+            <h4 className="font-medium mb-4">Dành cho khách hàng</h4>
             <ul className="space-y-2">
-              <li><Link to="/services" className="text-muted-foreground hover:text-primary">Find Services</Link></li>
-              <li><Link to="/businesses" className="text-muted-foreground hover:text-primary">Browse Businesses</Link></li>
-              <li><Link to="/faq" className="text-muted-foreground hover:text-primary">FAQ</Link></li>
-              <li><Link to="/contact" className="text-muted-foreground hover:text-primary">Contact Us</Link></li>
+              <li><Link to="/services" className="text-muted-foreground hover:text-primary">Tìm kiếm dịch vụ</Link></li>
+              <li><Link to="/businesses" className="text-muted-foreground hover:text-primary">Doanh nghiệp</Link></li>
+              <li><Link to="/faq" className="text-muted-foreground hover:text-primary">Câu hỏi thường gặp</Link></li>
+              {/* <li><Link to="/contact" className="text-muted-foreground hover:text-primary">Liên hệ</Link></li> */}
             </ul>
           </div>
           
           <div>
-            <h4 className="font-medium mb-4">For Businesses</h4>
+            <h4 className="font-medium mb-4">Dành cho doanh nghiệp</h4>
             <ul className="space-y-2">
-              <li><Link to="/business/register" className="text-muted-foreground hover:text-primary">List Your Business</Link></li>
-              <li><Link to="/business/login" className="text-muted-foreground hover:text-primary">Business Login</Link></li>
-              <li><Link to="/business/resources" className="text-muted-foreground hover:text-primary">Resources</Link></li>
-              <li><Link to="/business/pricing" className="text-muted-foreground hover:text-primary">Pricing</Link></li>
+              <li><Link to="/business/register" className="text-muted-foreground hover:text-primary">Đăng ký doanh nghiệp</Link></li>
+              {/* <li><Link to="/business/login" className="text-muted-foreground hover:text-primary">Đăng nhập doanh nghiệp</Link></li> */}
+              <li><Link to="/business/resources" className="text-muted-foreground hover:text-primary">Tài nguyên</Link></li>
+              <li><Link to="/business/pricing" className="text-muted-foreground hover:text-primary">Bảng giá</Link></li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-medium mb-4">Legal</h4>
+            <h4 className="font-medium mb-4">Pháp lý</h4>
             <ul className="space-y-2">
-              <li><Link to="/terms" className="text-muted-foreground hover:text-primary">Terms of Service</Link></li>
-              <li><Link to="/privacy" className="text-muted-foreground hover:text-primary">Privacy Policy</Link></li>
-              <li><Link to="/cookies" className="text-muted-foreground hover:text-primary">Cookie Policy</Link></li>
+              <li><Link to="/terms" className="text-muted-foreground hover:text-primary">Điều khoản dịch vụ</Link></li>
+              <li><Link to="/privacy" className="text-muted-foreground hover:text-primary">Chính sách bảo mật</Link></li>
+              <li><Link to="/cookies" className="text-muted-foreground hover:text-primary">Chính sách cookie</Link></li>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Harmony. All rights reserved.
+            © {new Date().getFullYear()} Harmony. Tất cả các quyền được bảo lưu.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-muted-foreground hover:text-primary">

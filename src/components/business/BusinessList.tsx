@@ -15,7 +15,7 @@ export function BusinessList() {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<BusinessSearchParams>({});
-  const limit = 8; // Number of businesses per page
+  const limit = 8; // Số lượng doanh nghiệp trên mỗi trang
 
   useEffect(() => {
     fetchBusinesses();
@@ -35,8 +35,8 @@ export function BusinessList() {
       setBusinesses(response.data);
       setTotalPages(Math.ceil(response.total / response.pageSize));
     } catch (error) {
-      setError("Failed to load businesses. Please try again later.");
-      console.error("Error fetching businesses:", error);
+      setError("Không thể tải danh sách doanh nghiệp. Vui lòng thử lại sau.");
+      console.error("Lỗi khi lấy danh sách doanh nghiệp:", error);
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export function BusinessList() {
 
   const handleSearch = (newFilters: BusinessSearchParams) => {
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1); // Quay lại trang đầu tiên khi tìm kiếm
   };
 
   const handlePageChange = (page: number) => {
@@ -54,7 +54,7 @@ export function BusinessList() {
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg p-5">
-        <h2 className="text-lg font-medium mb-4">Search Businesses</h2>
+        <h2 className="text-lg font-medium mb-4">Tìm kiếm doanh nghiệp</h2>
         <BusinessSearch onSearch={handleSearch} initialFilters={filters} />
       </div>
 
@@ -71,7 +71,7 @@ export function BusinessList() {
         </Alert>
       ) : businesses.length === 0 ? (
         <div className="bg-white shadow rounded-lg p-8 text-center">
-          <p className="text-gray-500">No businesses found matching your criteria.</p>
+          <p className="text-gray-500">Không tìm thấy doanh nghiệp nào phù hợp với tiêu chí tìm kiếm.</p>
         </div>
       ) : (
         <>

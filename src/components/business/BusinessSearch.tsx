@@ -45,7 +45,7 @@ export function BusinessSearch({ onSearch, initialFilters }: BusinessSearchProps
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Business name..." {...field} />
+                  <Input placeholder="Tên doanh nghiệp..." {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -57,7 +57,7 @@ export function BusinessSearch({ onSearch, initialFilters }: BusinessSearchProps
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="City..." {...field} />
+                  <Input placeholder="Tỉnh/thành phố..." {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -67,10 +67,10 @@ export function BusinessSearch({ onSearch, initialFilters }: BusinessSearchProps
         <div className="flex space-x-2">
           <Button type="submit" className="flex-1">
             <Search className="mr-2 h-4 w-4" />
-            Search
+            Tìm kiếm
           </Button>
           <Button type="button" variant="outline" onClick={handleReset}>
-            Reset
+            Đặt lại
           </Button>
         </div>
       </form>
