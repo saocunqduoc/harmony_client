@@ -1,4 +1,3 @@
-
 import { apiClient } from '../client';
 
 // Staff data types
@@ -66,6 +65,16 @@ export interface CreateMultipleScheduleParams {
   isDayOff: boolean;
 }
 
+export interface PaginatedStaff {
+  items: Staff[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 // Staff service
 class StaffService {
   private apiClient;
@@ -80,15 +89,25 @@ class StaffService {
     return response.data?.data || [];
   }
 
-  // New method to get owner's staff
-  async getOwnerStaff(): Promise<Staff[]> {
-    const response = await this.apiClient.get('/staff/owner');
-    return response.data?.data || [];
+  // Updated to return pagination
+  async getOwnerStaff(page = 1, limit = 10): Promise<PaginatedStaff> {
+    const response = await this.apiClient.get('/staff/owner', {
+      params: { page, limit },
+    });
+    return response.data?.data;
   }
 
-  async getStaffByBusiness(businessId: number): Promise<Staff[]> {
-    const response = await this.apiClient.get(`/staff/business/${businessId}`);
-    return response.data?.data || [];
+  // Optional: paginated business staff
+  async getStaffByBusiness(
+    businessId: number,
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedStaff> {
+    const response = await this.apiClient.get(
+      `/staff/business/${businessId}`,
+      { params: { page, limit } }
+    );
+    return response.data?.data;
   }
 
   async getStaffDetail(staffId: number): Promise<Staff> {

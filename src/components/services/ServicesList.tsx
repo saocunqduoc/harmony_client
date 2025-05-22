@@ -1,10 +1,10 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Service } from '@/api/services/serviceApiService';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import ServiceCard from './ServiceCard';
 import ServiceCardLoading from './ServiceCardLoading';
 
@@ -29,6 +29,13 @@ const ServicesList: React.FC<ServicesListProps> = ({
   fetchServices,
   handleClearFilters
 }) => {
+  const [inputPage, setInputPage] = useState(currentPage);
+
+  // keep input in sync with currentPage
+  useEffect(() => {
+    setInputPage(currentPage);
+  }, [currentPage]);
+
   // Debug log to see the service IDs and types
   console.log('Services in ServicesList:', services.map(s => ({ 
     id: s.id, 
@@ -101,22 +108,37 @@ const ServicesList: React.FC<ServicesListProps> = ({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center mt-6 gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-          >
+        <div className="flex items-center justify-center mt-6 gap-2">
+          <Button variant="outline" onClick={handlePrevPage} disabled={currentPage === 1}>
             Trước
           </Button>
-          <span className="flex items-center mx-2 text-muted-foreground">
-            Trang {currentPage} / {totalPages}
-          </span>
-          <Button 
-            variant="outline" 
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
+          <span className="text-sm">Trang</span>
+          <Input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={inputPage}
+            onChange={(e) => {
+              let v = parseInt(e.target.value, 10) || 1;
+              if (v < 1) v = 1;
+              if (v > totalPages) v = totalPages;
+              setInputPage(v);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setCurrentPage(inputPage);
+              }
+            }}
+            className="w-16 text-center p-1"
+          />
+          <span className="text-sm">/ {totalPages}</span>
+          {/* <Button
+            variant="outline"
+            onClick={() => setCurrentPage(inputPage)}
           >
+            Đi tới
+          </Button> */}
+          <Button variant="outline" onClick={handleNextPage} disabled={currentPage === totalPages}>
             Tiếp
           </Button>
         </div>

@@ -51,12 +51,12 @@ const ChangePasswordForm = ({ onComplete }: { onComplete: () => void }) => {
         newPassword: values.newPassword,
       });
       
-      toast.success('Đổi mật khẩu thành công');
+      // toast.success('Đổi mật khẩu thành công');
       form.reset();
       onComplete();
     } catch (error) {
       console.error('Failed to change password:', error);
-      toast.error('Đổi mật khẩu thất bại. Vui lòng kiểm tra mật khẩu hiện tại.');
+      // toast.error('Đổi mật khẩu thất bại. Vui lòng kiểm tra mật khẩu hiện tại.');
     } finally {
       setIsSubmitting(false);
     }

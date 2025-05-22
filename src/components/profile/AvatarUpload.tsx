@@ -43,7 +43,7 @@ const AvatarUpload = ({ currentAvatar, fullName, onAvatarUpdate }: AvatarUploadP
       // Update avatar URL
       if (result.avatar) {
         onAvatarUpdate(result.avatar);
-        toast.success('Cập nhật ảnh đại diện thành công');
+        // toast.success('Cập nhật ảnh đại diện thành công');
       }
       
       // Reset preview and file input
@@ -53,7 +53,7 @@ const AvatarUpload = ({ currentAvatar, fullName, onAvatarUpdate }: AvatarUploadP
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (error) {
       console.error('Failed to upload avatar:', error);
-      toast.error('Cập nhật ảnh đại diện thất bại');
+      // toast.error('Cập nhật ảnh đại diện thất bại');
     } finally {
       setIsUploading(false);
     }

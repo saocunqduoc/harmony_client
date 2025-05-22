@@ -27,7 +27,7 @@ interface ChartProps {
 
 // Hàm định dạng tiền tệ sang VND
 export const formatCurrency = (value: number): string => {
-  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VND';
+  return value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VND';
 };
 
 export const BarChart = ({ 

@@ -274,9 +274,9 @@ const AdminUsers = () => {
       </form>
 
       <Card>
-        <CardHeader className="pb-2">
+        {/* <CardHeader className="pb-2">
           <CardTitle className="text-lg">Người dùng</CardTitle>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
@@ -351,7 +351,7 @@ const AdminUsers = () => {
                             </Button>
                             
                             {/* Role Dropdown */}
-                            <Select 
+                            {/* <Select 
                               value={user.role}
                               onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
                             >
@@ -366,7 +366,7 @@ const AdminUsers = () => {
                                 <SelectItem value="customer">Khách hàng</SelectItem>
                               </SelectContent>
                             </Select>
-                            
+                             */}
                             {/* Status Toggle */}
                             <Button 
                               variant="ghost" 
@@ -433,7 +433,7 @@ const AdminUsers = () => {
                   <div>
                     Hiển thị {(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} trên {pagination.total} người dùng
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       variant="outline"
                       size="sm"
@@ -450,6 +450,15 @@ const AdminUsers = () => {
                     >
                       Sau
                     </Button>
+                    {/* Jump to page input */}
+                    <Input
+                      type="number"
+                      min={1}
+                      max={pagination.totalPages}
+                      value={page}
+                      onChange={(e) => setPage(Number(e.target.value))}
+                      className="w-16 text-center"
+                    />
                   </div>
                 </div>
               )}

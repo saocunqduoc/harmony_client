@@ -97,10 +97,10 @@ const Profile = () => {
       });
       
       setIsEditMode(false);
-      toast.success("Cập nhật hồ sơ thành công");
+      // toast.success("Cập nhật hồ sơ thành công");
     } catch (error) {
       console.error('Failed to update profile:', error);
-      toast.error("Cập nhật hồ sơ thất bại");
+      // toast.error("Cập nhật hồ sơ thất bại");
     } finally {
       setIsUpdating(false);
     }

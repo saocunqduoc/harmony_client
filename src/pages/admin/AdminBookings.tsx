@@ -431,6 +431,18 @@ const AdminBookings = () => {
                   >
                     Sau
                   </Button>
+                  {/* Jump to page input */}
+                  <div className="flex items-center space-x-1">
+                    <span>Trang:</span>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={totalPages}
+                      value={filters.page}
+                      onChange={(e) => handlePageSelect(Number(e.target.value))}
+                      className="w-16 text-center"
+                    />
+                  </div>
                 </div>
               )}
             </>

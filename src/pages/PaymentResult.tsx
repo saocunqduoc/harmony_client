@@ -7,12 +7,17 @@ import Layout from '@/components/layout/Layout';
 import { usePayment } from '@/hooks/use-payment';
 import { useQuery } from '@tanstack/react-query';
 import type { PaymentStatus } from '@/api/services/paymentService';
+import { paymentService } from '@/api/services/paymentService';
 import { toast } from 'sonner';
+import Cookies from 'js-cookie';
 
 const DEFAULT_STATUS: PaymentStatus = {
   status: 'pending',
   message: 'Đang kiểm tra trạng thái thanh toán...'
 };
+
+// Cookie key for storing bookingId
+const BOOKING_ID_COOKIE = 'harmony_current_booking';
 
 const PaymentResult: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +31,7 @@ const PaymentResult: React.FC = () => {
   
   const [isProcessed, setIsProcessed] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Extract ZaloPay parameters from URL if present
   useEffect(() => {
@@ -33,6 +39,16 @@ const PaymentResult: React.FC = () => {
     const apptransid = searchParams.get('apptransid');
     const status = searchParams.get('status');
     const processed = searchParams.get('processed');
+    const bookingId = searchParams.get('bookingId');
+    
+    // Store bookingId in cookie if available
+    if (bookingId) {
+      Cookies.set(BOOKING_ID_COOKIE, bookingId, {
+        expires: 1/24, // 1 hour
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+    }
     
     // Only process if there's a transaction ID, it hasn't been processed yet,
     // and there's no 'processed' flag in the URL
@@ -92,17 +108,21 @@ const PaymentResult: React.FC = () => {
       const urlParams = new URLSearchParams(location.search);
       const urlStatus = urlParams.get('status');
       const urlTransId = urlParams.get('transactionId') || urlParams.get('apptransid');
+      const bookingId = urlParams.get('bookingId') || Cookies.get(BOOKING_ID_COOKIE);
       
       if (urlStatus && urlTransId) {
         console.log('Using payment status from URL parameters');
         
         // For ZaloPay, convert status code to readable status
-        let statusText: 'success' | 'failed' | 'pending' = 'pending';
+        let statusText: 'success' | 'failed' | 'pending' | 'timeout' = 'pending';
         let statusMessage = '';
         
         if (urlStatus === '1') {
           statusText = 'success';
           statusMessage = 'Thanh toán thành công';
+        } else if (urlStatus === '-49') {
+          statusText = 'timeout';
+          statusMessage = 'Thanh toán đã hết hạn';
         } else if (urlStatus.startsWith('-')) {
           statusText = 'failed';
           statusMessage = urlParams.get('message') || 'Thanh toán thất bại';
@@ -117,6 +137,7 @@ const PaymentResult: React.FC = () => {
           status: statusText,
           message: statusMessage,
           transactionId: urlTransId,
+          bookingId,
           amount: urlParams.get('amount') ? parseInt(urlParams.get('amount') || '0') : undefined,
           failureReason: urlParams.get('failureReason') || undefined
         } as PaymentStatus;
@@ -126,6 +147,15 @@ const PaymentResult: React.FC = () => {
       try {
         const status = await getPaymentStatus?.();
         console.log('Backend payment status:', status);
+        
+        // If we got status from backend but no bookingId, try to add it from cookie
+        if (status && !status.bookingId) {
+          const cookieBookingId = Cookies.get(BOOKING_ID_COOKIE);
+          if (cookieBookingId) {
+            status.bookingId = cookieBookingId;
+          }
+        }
+        
         return status || DEFAULT_STATUS;
       } catch (error) {
         console.error('Error fetching payment status:', error);
@@ -147,6 +177,39 @@ const PaymentResult: React.FC = () => {
   });
 
   const paymentStatus = (data || DEFAULT_STATUS) as PaymentStatus;
+
+  // Handle retry payment for failed or timeout payments
+  const handleRetryPayment = async () => {
+    const bookingId = paymentStatus.bookingId || Cookies.get(BOOKING_ID_COOKIE);
+    
+    if (!bookingId) {
+      toast.error('Không tìm thấy thông tin đặt lịch để thử lại');
+      return;
+    }
+
+    try {
+      setIsRetrying(true);
+      toast.info('Đang khởi tạo lại thanh toán...');
+      
+      // Khởi tạo lại thanh toán ZaloPay với bookingId
+      const response = await paymentService.initPayment({
+        bookingId: parseInt(bookingId),
+        method: 'zalopay'
+      });
+      
+      if (response?.redirectUrl) {
+        // Redirect to payment gateway
+        window.location.href = response.redirectUrl;
+      } else {
+        toast.error(response?.message || 'Không thể khởi tạo thanh toán');
+        setIsRetrying(false);
+      }
+    } catch (error) {
+      console.error('Error retrying payment:', error);
+      toast.error('Không thể thử lại thanh toán. Vui lòng thử lại sau.');
+      setIsRetrying(false);
+    }
+  };
 
   const renderIcon = () => {
     switch (paymentStatus.status) {
@@ -226,12 +289,23 @@ const PaymentResult: React.FC = () => {
             <Button 
               variant={paymentStatus.status === 'failed' || paymentStatus.status === 'timeout' ? 'default' : 'outline'} 
               className="w-full" 
-              onClick={() => navigate('/services')}
-              disabled={paymentStatus.status === 'pending'}
+              onClick={() => {
+                if (paymentStatus.status === 'failed' || paymentStatus.status === 'timeout') {
+                  handleRetryPayment();
+                } else {
+                  navigate('/services');
+                }
+              }}
+              disabled={paymentStatus.status === 'pending' || isRetrying}
             >
-              {paymentStatus.status === 'failed' || paymentStatus.status === 'timeout' 
-                ? 'Thử lại' 
-                : 'Tiếp tục đặt dịch vụ'}
+              {isRetrying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang khởi tạo lại...
+                </>
+              ) : paymentStatus.status === 'failed' || paymentStatus.status === 'timeout' ? 
+                'Thử lại' : 
+                'Tiếp tục đặt dịch vụ'}
             </Button>
           </CardFooter>
         </Card>

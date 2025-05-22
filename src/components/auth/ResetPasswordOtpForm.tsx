@@ -28,28 +28,25 @@ const otpVerificationSchema = z.object({
 
 type OtpVerificationValues = z.infer<typeof otpVerificationSchema>;
 
-const OtpVerificationForm = () => {
+const ResetPasswordOtpForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [verificationType, setVerificationType] = useState<'registration' | 'reset'>('registration');
   const navigate = useNavigate();
   const location = useLocation();
   
   useEffect(() => {
-    // Lấy email và loại từ tham số URL
+    // Lấy email từ tham số URL
     const params = new URLSearchParams(location.search);
     const emailParam = params.get('email');
-    const typeParam = params.get('type');
     
     if (!emailParam) {
-      // toast.error('Email là bắt buộc');
-      navigate('/');
+    //   toast.error('Email là bắt buộc');
+      navigate('/forgot-password');
       return;
     }
     
     setEmail(emailParam);
-    setVerificationType(typeParam === 'reset' ? 'reset' : 'registration');
   }, [location, navigate]);
   
   // Hiệu ứng hẹn giờ cho thời gian chờ gửi lại
@@ -74,28 +71,17 @@ const OtpVerificationForm = () => {
       // Chuyển đổi OTP thành chuỗi để đảm bảo định dạng đúng
       const otpString = values.otp.toString();
       
-      if (verificationType === 'reset') {
-        // Cho luồng đặt lại mật khẩu, sử dụng endpoint verifyOtpForPasswordReset
-        await authService.verifyOtpForPasswordReset({
-          email,
-          otp: otpString,
-        });
-        
-        // toast.success('Xác minh OTP thành công');
-        navigate(`/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpString)}`);
-      } else {
-        // Cho luồng xác minh đăng ký
-        await authService.verifyOtp({
-          email,
-          otp: otpString,
-        });
-        
-        // toast.success('Xác minh tài khoản thành công');
-        navigate('/login');
-      }
+      // Xác minh OTP cho đặt lại mật khẩu
+      await authService.verifyOtpForPasswordReset({
+        email,
+        otp: otpString,
+      });
+      
+    //   toast.success('Xác minh OTP thành công');
+      navigate(`/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpString)}`);
     } catch (error) {
       console.error('OTP verification failed:', error);
-      // toast.error('Xác minh OTP thất bại. Vui lòng thử lại.');
+    //   toast.error('Xác minh OTP thất bại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -106,13 +92,13 @@ const OtpVerificationForm = () => {
     
     try {
       setIsLoading(true);
-      // Luôn sử dụng forgotPassword cho cả hai luồng vì nó gửi OTP
+      // Đúng với mục đích - sử dụng forgotPassword cho luồng đặt lại mật khẩu
       await authService.forgotPassword({ email });
-      // toast.success('Mã OTP mới đã được gửi đến email của bạn');
+    //   toast.success('Mã OTP mới đã được gửi đến email của bạn');
       setCountdown(60); // Đặt đếm ngược là 60 giây
     } catch (error) {
       console.error('Failed to resend OTP:', error);
-      // toast.error('Không thể gửi lại OTP. Vui lòng thử lại.');
+    //   toast.error('Không thể gửi lại OTP. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +109,7 @@ const OtpVerificationForm = () => {
       <div className="text-center">
         <h1 className="text-2xl font-bold">Xác minh OTP</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Nhập mã 6 chữ số đã gửi đến {email}
+          Nhập mã 6 chữ số đã gửi đến {email} để đặt lại mật khẩu
         </p>
       </div>
 
@@ -162,7 +148,7 @@ const OtpVerificationForm = () => {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
                 Đang xác minh...
               </>
-            ) : 'Xác minh OTP'}
+            ) : 'Tiếp tục'}
           </Button>
         </form>
       </Form>
@@ -183,13 +169,13 @@ const OtpVerificationForm = () => {
         <Button 
           variant="link" 
           className="mt-2 text-primary" 
-          onClick={() => verificationType === 'reset' ? navigate('/forgot-password') : navigate('/register')}
+          onClick={() => navigate('/forgot-password')}
         >
-          {verificationType === 'reset' ? 'Thay đổi Email' : 'Quay lại đăng ký'}
+          Thay đổi Email
         </Button>
       </div>
     </div>
   );
 };
 
-export default OtpVerificationForm;
+export default ResetPasswordOtpForm;

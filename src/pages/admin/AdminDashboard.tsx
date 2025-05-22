@@ -113,13 +113,13 @@ const AdminDashboard = () => {
                 <MessageSquare className="h-4 w-4 mr-3" />
                 Đánh giá
               </Link>
-              <Link
+              {/* <Link
                 to="/admin/settings"
                 className={`flex items-center px-3 py-2 rounded-md hover:bg-accent ${isActive('/admin/settings') ? 'bg-accent' : ''}`}
               >
                 <Settings className="h-4 w-4 mr-3" />
                 Cài đặt
-              </Link>
+              </Link> */}
             </nav>
 
             <div className="mt-auto pt-6">
@@ -139,7 +139,7 @@ const AdminDashboard = () => {
             <Route path="services" element={<AdminServices />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="reviews" element={<AdminReviews />} />
-            <Route path="settings" element={<AdminSettings />} />
+            {/* <Route path="settings" element={<AdminSettings />} /> */}
             <Route path="categories" element={<AdminServiceCategories/>} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>

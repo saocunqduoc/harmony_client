@@ -213,19 +213,31 @@ export const adminService = {
    */
   getAllServices: async (params: PaginationParams = {}) => {
     const queryParams: Record<string, string> = {};
-    
-    // Convert number values to strings for the API request
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
         queryParams[key] = value.toString();
       }
     });
-    
-    const response = await apiClient.get<ApiResponse<any>>("/admins/services", { 
-      params: queryParams 
-    });
-    
-    return response.data.data;
+
+    const response = await apiClient.get<ApiResponse<{
+      items: any[];
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
+    }>>("/admins/services", { params: queryParams });
+
+    // unwrap and reshape pagination
+    const d = response.data.data;
+    return {
+      items: d.items,
+      pagination: {
+        totalItems: d.totalItems,
+        totalPages: d.totalPages,
+        currentPage: d.currentPage,
+        itemsPerPage: d.itemsPerPage
+      }
+    };
   },
   
   /**

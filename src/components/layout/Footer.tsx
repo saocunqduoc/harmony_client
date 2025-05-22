@@ -40,7 +40,7 @@ const Footer = () => {
               <li><Link to="/business/register" className="text-muted-foreground hover:text-primary">Đăng ký doanh nghiệp</Link></li>
               {/* <li><Link to="/business/login" className="text-muted-foreground hover:text-primary">Đăng nhập doanh nghiệp</Link></li> */}
               <li><Link to="/business/resources" className="text-muted-foreground hover:text-primary">Tài nguyên</Link></li>
-              <li><Link to="/business/pricing" className="text-muted-foreground hover:text-primary">Bảng giá</Link></li>
+              {/* <li><Link to="/business/pricing" className="text-muted-foreground hover:text-primary">Bảng giá</Link></li> */}
             </ul>
           </div>
           

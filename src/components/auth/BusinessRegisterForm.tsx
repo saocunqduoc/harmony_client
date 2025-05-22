@@ -146,16 +146,16 @@ const BusinessRegisterForm = () => {
       
       await businessService.applyBusiness(businessData);
       
-      toast.success('Đăng ký doanh nghiệp thành công', {
-        description: 'Đơn đăng ký của bạn đã được gửi để xem xét. Bạn sẽ được thông báo khi đơn được phê duyệt.'
-      });
+      // toast.success('Đăng ký doanh nghiệp thành công', {
+      //   description: 'Đơn đăng ký của bạn đã được gửi để xem xét. Bạn sẽ được thông báo khi đơn được phê duyệt.'
+      // });
       
       navigate('/businesses');
     } catch (error) {
       console.error('Business registration failed:', error);
-      toast.error('Đăng ký thất bại', {
-        description: error instanceof Error ? error.message : 'Đã xảy ra lỗi không mong muốn'
-      });
+      // toast.error('Đăng ký thất bại', {
+      //   description: error instanceof Error ? error.message : 'Đã xảy ra lỗi không mong muốn'
+      // });
     } finally {
       setIsLoading(false);
     }

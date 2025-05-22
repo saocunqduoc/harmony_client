@@ -1,10 +1,10 @@
-
 import { useApi } from './use-api';
-import { 
-  staffService, 
-  Staff, 
-  CreateStaffParams, 
+import {
+  staffService,
+  Staff,
+  CreateStaffParams,
   UpdateStaffParams,
+  PaginatedStaff,
   StaffSchedule,
   CreateScheduleParams,
   UpdateScheduleParams,
@@ -13,25 +13,28 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-export const useStaff = () => {
+export const useStaff = (page = 1, limit = 10) => {
   const { apiQuery, apiMutation, invalidateQueries } = useApi();
   const { user } = useAuth();
   
   const businessId = user?.business?.id;
 
-  // Get all staff for the current business owner
-  const { 
-    data: staffList = [],
+  // Paginated owner staff
+  const {
+    data: paginatedData,
     isLoading: isLoadingStaff,
-    refetch: refetchStaff
-  } = apiQuery(
-    ['staff', 'owner'],
-    () => staffService.getOwnerStaff(),
+    refetch: refetchStaff,
+  } = apiQuery<PaginatedStaff>(
+    ['staff', 'owner', page, limit],
+    () => staffService.getOwnerStaff(page, limit),
     {
-      enabled: !!user && (user?.role === 'owner' || user?.role === 'manager'),
+      enabled: !!user && (user.role === 'owner' || user.role === 'manager'),
       retry: 1,
     }
   );
+
+  const staffList: Staff[] = paginatedData?.items || [];
+  const pagination = paginatedData?.pagination;
 
   // Get business by ID for viewing other businesses (used on public pages)
   const getStaffByBusiness = (id: number) => {
@@ -150,6 +153,7 @@ export const useStaff = () => {
 
   return {
     staffList,
+    pagination,
     isLoadingStaff,
     refetchStaff,
     getStaffByBusiness,

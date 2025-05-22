@@ -40,7 +40,7 @@ const BookingReview = () => {
       
       if (data && data.services) {
         data.services.forEach(service => {
-          reviewsObj[service.bookingDetailId] = { rating: 5, comment: '' };
+          reviewsObj[service.bookingDetailId] = { rating: 0, comment: '' };
         });
       }
       
@@ -70,18 +70,14 @@ const BookingReview = () => {
     }));
   };
 
-  // Format time string (HH:MM:SS) to AM/PM format
+  // Format time string (HH:MM:SS) to 24-hour HH:MM
   const formatTime = (time: string) => {
     if (!time || time === '00:00:00') return '';
-    try {
-      const [hours, minutes] = time.split(':');
-      const hour = parseInt(hours);
-      if (isNaN(hour)) return '';
-      return `${hour > 12 ? hour - 12 : hour}:${minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
-    } catch (error) {
-      console.error('Error formatting time:', time, error);
-      return '';
-    }
+    const [hours, minutes] = time.split(':');
+    if (hours == null || minutes == null) return '';
+    const h = hours.padStart(2, '0');
+    const m = minutes.padStart(2, '0');
+    return `${h}:${m}`;
   };
 
   // Submit all service reviews

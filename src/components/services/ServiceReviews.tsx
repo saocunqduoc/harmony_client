@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface ServiceReviewsProps {
   serviceId: number;
@@ -22,38 +23,39 @@ const ReviewsPagination: React.FC<ReviewsPaginationProps> = ({ totalPages, curre
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex justify-center mt-6">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={currentPage <= 1}
-          onClick={() => onPageChange(currentPage - 1)}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-          <Button
-            key={page}
-            variant={currentPage === page ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onPageChange(page)}
-            className="w-9"
-          >
-            {page}
-          </Button>
-        ))}
-
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={currentPage >= totalPages}
-          onClick={() => onPageChange(currentPage + 1)}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+    <div className="flex justify-center items-center mt-6 space-x-2">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage <= 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <span className="text-sm text-muted-foreground">Trang</span>
+      <Input
+        type="number"
+        size="sm"
+        className="w-16 text-center"
+        min={1}
+        max={totalPages}
+        value={currentPage}
+        onChange={(e) => {
+          const val = Number(e.target.value);
+          if (val >= 1 && val <= totalPages) {
+            onPageChange(val);
+          }
+        }}
+      />
+      <span className="text-sm text-muted-foreground">/ {totalPages}</span>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage >= totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   );
 };

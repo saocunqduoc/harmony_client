@@ -1,4 +1,3 @@
-
 import { api, createAuthHeader } from "../client";
 
 // Types for booking-related data
@@ -262,8 +261,8 @@ export const bookingService = {
   /**
    * Update booking status (for business owners)
    */
-  updateBookingStatus: (bookingId: number, status: Booking["status"]): Promise<Booking> => {
-    return api.put<Booking>(`/bookings/${bookingId}/status`, { status }, {
+  updateBookingStatus: (bookingId: number, status: Booking["status"], paymentStatus?: string): Promise<Booking> => {
+    return api.put<Booking>(`/bookings/${bookingId}/status`, { status, paymentStatus }, {
       headers: createAuthHeader()
     });
   },

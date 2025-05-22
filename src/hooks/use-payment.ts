@@ -12,7 +12,7 @@ export const usePayment = () => {
   const { apiQuery, apiMutation, invalidateQueries } = useApi();
   const location = useLocation();
   const [transactionId, setTransactionId] = useState<string | null>(null);
-
+  const [bookingId, setBookingId] = useState<string | null>(null);
   // Extract transaction ID from URL or cookies on mount
   useEffect(() => {
     const storedTransId = Cookies.get(TRANSACTION_ID_COOKIE);

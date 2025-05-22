@@ -54,21 +54,21 @@ const LoginForm = () => {
           navigate('/dashboard');
         }
         
-        toast.success('Đăng nhập thành công', {
-          description: 'Chào mừng bạn quay trở lại!'
-        });
+        // toast.success('Đăng nhập thành công', {
+        //   description: 'Chào mừng bạn quay trở lại!'
+        // });
       } else {
         setError('Email hoặc mật khẩu không hợp lệ');
-        toast.error('Đăng nhập thất bại', {
-          description: 'Vui lòng kiểm tra thông tin đăng nhập và thử lại'
-        });
+        // toast.error('Đăng nhập thất bại', {
+        //   description: 'Vui lòng kiểm tra thông tin đăng nhập và thử lại'
+        // });
       }
     } catch (err) {
       console.error('Login error:', err);
       setError('Đã xảy ra lỗi trong quá trình đăng nhập');
-      toast.error('Đăng nhập thất bại', {
-        description: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.'
-      });
+      // toast.error('Đăng nhập thất bại', {
+      //   description: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.'
+      // });
     }
   };
 

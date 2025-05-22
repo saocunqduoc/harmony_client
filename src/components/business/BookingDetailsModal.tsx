@@ -83,12 +83,12 @@ const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     },
     {
       onSuccess: () => {
-        toast.success('Cập nhật trạng thái thành công');
+        // toast.success('Cập nhật trạng thái thành công');
         onStatusChange();
         onOpenChange(false);
       },
       onError: (error) => {
-        toast.error('Không thể cập nhật trạng thái. Vui lòng thử lại.');
+        // toast.error('Không thể cập nhật trạng thái. Vui lòng thử lại.');
       },
     }
   );

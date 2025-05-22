@@ -48,7 +48,7 @@ const EditBookingDetailDialog: React.FC<EditBookingDetailDialogProps> = ({
       }
     } catch (error) {
       console.error('Error fetching time slots:', error);
-      toast.error('Không thể tải danh sách thời gian trống');
+      // toast.error('Không thể tải danh sách thời gian trống');
     }
   };
 
@@ -56,7 +56,7 @@ const EditBookingDetailDialog: React.FC<EditBookingDetailDialogProps> = ({
     e.preventDefault();
     
     if (!detailId || !selectedSlot) {
-      toast.error('Vui lòng chọn thời gian');
+      // toast.error('Vui lòng chọn thời gian');
       return;
     }
     
@@ -70,12 +70,12 @@ const EditBookingDetailDialog: React.FC<EditBookingDetailDialogProps> = ({
         endTime
       });
       
-      toast.success('Cập nhật thành công');
+      // toast.success('Cập nhật thành công');
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating booking detail:', error);
-      toast.error('Không thể cập nhật. Vui lòng thử lại sau.');
+      // toast.error('Không thể cập nhật. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }

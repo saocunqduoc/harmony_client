@@ -40,15 +40,15 @@ const ForgotPasswordForm = () => {
       setIsLoading(true);
       await authService.forgotPassword({ email: values.email });
       
-      toast.success('Hướng dẫn đặt lại đã được gửi', {
-        description: 'Vui lòng kiểm tra email của bạn để lấy mã OTP'
-      });
+      // toast.success('Hướng dẫn đặt lại đã được gửi', {
+      //   description: 'Vui lòng kiểm tra email của bạn để lấy mã OTP'
+      // });
       
       // Chuyển hướng đến màn hình xác minh OTP với tham số email và định danh luồng đặt lại
       navigate(`/verify-otp?email=${encodeURIComponent(values.email)}&type=reset`);
     } catch (error) {
       console.error('Password reset request failed:', error);
-      toast.error('Không thể gửi hướng dẫn đặt lại. Vui lòng thử lại.');
+      // toast.error('Không thể gửi hướng dẫn đặt lại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }

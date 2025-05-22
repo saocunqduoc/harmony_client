@@ -27,6 +27,12 @@ import ExploreBusinesses from "./pages/ExploreBusinesses";
 import Profile from "./pages/Profile";
 import CheckoutPage from "./pages/CheckoutPage";
 
+// Legal and FAQ pages
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import FAQ from "./pages/FAQ";
+
 // Protected pages
 import Dashboard from "./pages/Dashboard";
 import UserBookings from "./pages/UserBookings";
@@ -130,6 +136,12 @@ const App: React.FC = () => {
                     <AdminDashboard />
                   </ProtectedRoute>
                 } />
+                
+                {/* Legal and FAQ routes */}
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/cookies" element={<CookiePolicy />} />
+                <Route path="/faq" element={<FAQ />} />
                 
                 {/* Review routes */}
                 <Route path="/review/booking/:bookingId" element={<BookingReview />} />

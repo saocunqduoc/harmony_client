@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStaff } from '@/hooks/use-staff';
-import { useAuth } from '@/context/AuthContext';
+import { useApiAuth } from '@/context/ApiAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PlusCircle, Search, Loader2 } from 'lucide-react';
+import { PlusCircle, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CreateStaffParams, UpdateStaffParams, Staff } from '@/api/services/staffService';
 import StaffList from '@/components/staff/StaffList';
 import StaffForm from '@/components/staff/StaffForm';
@@ -14,10 +13,16 @@ import StaffScheduleManager from '@/components/staff/StaffScheduleManager';
 import { Card, CardContent } from '@/components/ui/card';
 
 const BusinessStaff = () => {
-  const { user } = useAuth();
+  const { user } = useApiAuth();
+  const currentRole = user?.role?.toLowerCase() ?? '';
+  const isManager = currentRole === 'manager';
   
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
   const {
     staffList,
+    pagination,
     isLoadingStaff,
     refetchStaff,
     createStaff,
@@ -26,18 +31,18 @@ const BusinessStaff = () => {
     isCreatingStaff,
     isUpdatingStaff,
     isDeletingStaff
-  } = useStaff();
+  } = useStaff(page, limit);
   
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState(isManager ? 'staff' : 'all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
 
-  // Fetch staff list when component mounts
+  // Fetch staff list when component mounts or page changes
   useEffect(() => {
     refetchStaff();
-  }, [refetchStaff]);
+  }, [refetchStaff, page]);
 
   // Filter staff by role
   const filteredStaff = staffList.filter(staff => {
@@ -45,8 +50,14 @@ const BusinessStaff = () => {
                           staff.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           staff.position.toLowerCase().includes(searchTerm.toLowerCase());
     
+    // normalize each staff item’s role
+    const staffRole = staff.user.role?.toLowerCase() || '';
+    // if I’m a manager, only show staff
+    if (isManager) {
+      return staffRole === 'staff' && matchesSearch;
+    }
     if (activeTab === 'all') return matchesSearch;
-    return staff.user.role === activeTab && matchesSearch;
+    return staffRole === activeTab && matchesSearch;
   });
 
   // Handle adding new staff
@@ -98,6 +109,7 @@ const BusinessStaff = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          {/* Add staff dialog */}
           <Dialog open={isAddStaffOpen} onOpenChange={setIsAddStaffOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -112,7 +124,12 @@ const BusinessStaff = () => {
                   Nhập thông tin nhân viên mới. Mật khẩu sẽ được tạo tự động và gửi qua email.
                 </DialogDescription>
               </DialogHeader>
-              <StaffForm onSubmit={handleAddStaff} isSubmitting={isCreatingStaff} />
+              <StaffForm
+                onSubmit={handleAddStaff}
+                isSubmitting={isCreatingStaff}
+                // force role when manager
+                fixedRole={isManager ? 'staff' : undefined}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -120,8 +137,12 @@ const BusinessStaff = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">Tất cả</TabsTrigger>
-          <TabsTrigger value="manager">Quản lý</TabsTrigger>
+          {!isManager && (
+            <>
+              <TabsTrigger value="all">Tất cả</TabsTrigger>
+              <TabsTrigger value="manager">Quản lý</TabsTrigger>
+            </>
+          )}
           <TabsTrigger value="staff">Nhân viên</TabsTrigger>
         </TabsList>
 
@@ -144,6 +165,21 @@ const BusinessStaff = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* pagination controls */}
+      {pagination && (
+        <div className="flex justify-center items-center space-x-4 mt-4">
+          <Button variant="outline" size="icon" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Trang {pagination.page} / {pagination.totalPages}
+          </span>
+          <Button variant="outline" size="icon" disabled={page >= pagination.totalPages} onClick={() => setPage(p => p + 1)}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Edit staff dialog */}
       {selectedStaff && (

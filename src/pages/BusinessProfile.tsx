@@ -5,7 +5,7 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, MapPin, Clock, Phone, Mail, Calendar, MessageSquare, Search } from 'lucide-react';
+import { Star, MapPin, Clock, Phone, Mail, Calendar, MessageSquare, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { businessService, Business } from '@/api/services/businessService';
 import { serviceApiService, Service, ServiceQueryParams } from '@/api/services/serviceApiService';
 import { businessHoursService, BusinessHoursResponse } from '@/api/services/businessHoursService';
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Loader2 } from 'lucide-react';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +42,16 @@ const BusinessProfile = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState<string>('name_asc');
   
+  // add review state
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsPagination, setReviewsPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 5
+  });
+  const [isReviewsLoading, setIsReviewsLoading] = useState(false);
+
   useEffect(() => {
     if (!id) return;
     
@@ -82,6 +93,12 @@ const BusinessProfile = () => {
     // Only fetch services when the services tab is selected
     if (value === 'services' && id) {
       fetchServices();
+    }
+
+    // call when user switches to reviews tab
+    if (value === 'reviews') {
+      setReviewsPagination(prev => ({ ...prev, currentPage: 1 }));
+      fetchReviews(1);
     }
   };
 
@@ -131,6 +148,24 @@ const BusinessProfile = () => {
     }
   };
 
+  // fetch reviews helper
+  const fetchReviews = async (page = 1) => {
+    if (!id) return;
+    setIsReviewsLoading(true);
+    try {
+      const { reviews, pagination } = await businessService.getBusinessReviews(
+        Number(id),
+        { page, limit: reviewsPagination.itemsPerPage }
+      );
+      setReviews(reviews);
+      setReviewsPagination(pagination);
+    } catch {
+      toast.error("Không thể tải đánh giá");
+    } finally {
+      setIsReviewsLoading(false);
+    }
+  };
+
   const handleCategoryFilter = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
     setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to first page
@@ -154,6 +189,11 @@ const BusinessProfile = () => {
     setPagination(prev => ({ ...prev, currentPage: page }));
     // This will trigger useEffect to fetch services with new page
   };
+  
+  // reload on page change
+  useEffect(() => {
+    fetchReviews(reviewsPagination.currentPage);
+  }, [reviewsPagination.currentPage]);
   
   useEffect(() => {
     if (id && !isLoading) {
@@ -323,8 +363,8 @@ const BusinessProfile = () => {
                 <div className="flex items-center mt-2">
                   <div className="flex items-center">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-1" />
-                    <span className="font-medium">4.5</span>
-                    <span className="ml-1">(24 đánh giá)</span>
+                    <span className="font-medium">{ business.rating > 0 ? business.rating : 'Chưa có đánh giá'}</span>
+                    {/* <span className="ml-1">(24 đánh giá)</span> */}
                   </div>
                   {business.city && (
                     <div className="flex items-center ml-4">
@@ -646,20 +686,106 @@ const BusinessProfile = () => {
                 <h2 className="text-2xl font-semibold">Đánh giá từ khách hàng</h2>
                 <div className="flex items-center">
                   <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-1" />
-                  <span className="font-medium text-lg">4.5</span>
-                  <span className="text-muted-foreground ml-1">(24 đánh giá)</span>
+                  <span className="font-medium text-lg">{business.rating > 0 ? business.rating : 'Chưa có đánh giá'}</span>
                 </div>
               </div>
-              
-              <div className="space-y-4">
+
+              {isReviewsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-harmony-600" />
+                </div>
+              ) : reviews.length === 0 ? (
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-center h-32">
-                      <p className="text-muted-foreground">Chưa có đánh giá nào</p>
-                    </div>
+                  <CardContent className="p-6 text-center text-muted-foreground">
+                    Không có đánh giá nào
                   </CardContent>
                 </Card>
-              </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map(rv => (
+                    <Card key={rv.id}>
+                      <CardContent className="p-6 flex gap-4">
+                        <img
+                          src={rv.customerAvatar || 'https://w7.pngwing.com/pngs/205/731/png-transparent-default-avatar.png'}
+                          alt={rv.customerName}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{rv.customerName}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(rv.createdAt).toLocaleDateString('vi-VN')}
+                            </span>
+                          </div>
+                          <div className="flex items-center mt-1">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < rv.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                            <span className="ml-2 text-sm">({rv.rating})</span>
+                          </div>
+                          {/* display the service name */}
+                          <div className="text-sm text-muted-foreground mt-2">
+                            Tên dịch vụ: {rv.serviceName}
+                          </div>
+                          <p className="mt-2 text-sm">{rv.comment}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {/* pagination */}
+                  {reviewsPagination.totalPages > 1 && (
+                    <div className="flex justify-center items-center space-x-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={reviewsPagination.currentPage <= 1}
+                        onClick={() =>
+                          setReviewsPagination(prev => ({
+                            ...prev,
+                            currentPage: prev.currentPage - 1
+                          }))
+                        }
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-muted-foreground">Trang</span>
+                      <Input
+                        type="number"
+                        size="sm"
+                        className="w-16 text-center"
+                        min={1}
+                        max={reviewsPagination.totalPages}
+                        value={reviewsPagination.currentPage}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 1 && val <= reviewsPagination.totalPages) {
+                            setReviewsPagination(prev => ({ ...prev, currentPage: val }));
+                          }
+                        }}
+                      />
+                      <span className="text-sm text-muted-foreground">/ {reviewsPagination.totalPages}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={reviewsPagination.currentPage >= reviewsPagination.totalPages}
+                        onClick={() =>
+                          setReviewsPagination(prev => ({
+                            ...prev,
+                            currentPage: prev.currentPage + 1
+                          }))
+                        }
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>

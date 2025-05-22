@@ -54,7 +54,7 @@ const BookingPayment: React.FC<BookingPaymentProps> = ({
         
         // Additional logging to troubleshoot checkout issues
         if (!result || !result.redirectUrl) {
-          toast.error('Không thể khởi tạo thanh toán. Vui lòng thử lại sau.');
+          // toast.error('Không thể khởi tạo thanh toán. Vui lòng thử lại sau.');
           console.error('Payment initiation failed - no redirect URL returned');
         } else {
           // If we have a redirect URL, redirect the user
@@ -63,7 +63,7 @@ const BookingPayment: React.FC<BookingPaymentProps> = ({
       }
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
+      // toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
     }
   };
 

@@ -111,9 +111,9 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const handleBookNow = async () => {
     if (!isAuthenticated) {
-      toast.error('Vui lòng đăng nhập để đặt dịch vụ này', {
-        description: 'Bạn cần đăng nhập để thực hiện đặt lịch.'
-      });
+      // toast.error('Vui lòng đăng nhập để đặt dịch vụ này', {
+      //   description: 'Bạn cần đăng nhập để thực hiện đặt lịch.'
+      // });
       navigate('/login', { state: { from: window.location.pathname } });
       return;
     }
@@ -169,10 +169,10 @@ const ServiceBooking: React.FC<ServiceBookingProps> = ({
       
       navigate('/user/bookings');
     } catch (error) {
-      console.error('Booking error:', error);
-      toast.error('Không thể đặt dịch vụ', {
-        description: 'Vui lòng thử lại hoặc liên hệ hỗ trợ.'
-      });
+      // console.error('Booking error:', error);
+      // toast.error('Không thể đặt dịch vụ', {
+      //   description: 'Vui lòng thử lại hoặc liên hệ hỗ trợ.'
+      // });
     }
   };
 

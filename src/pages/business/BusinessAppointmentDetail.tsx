@@ -106,17 +106,13 @@ const paymentStatusColors: Record<string, string> = {
   failed: 'bg-red-100 text-red-800'
 };
 
-const formatTime = (timeString: string) => {
-  if (!timeString || timeString === '00:00:00') return '';
-  
-  try {
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    return `${hour > 12 ? hour - 12 : hour}:${minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
-  } catch (error) {
-    console.error('Error formatting time:', error);
-    return timeString;
-  }
+const formatTime = (time: string) => {
+  if (!time || time === '00:00:00') return '';
+  const [hours, minutes] = time.split(':');
+  if (hours == null || minutes == null) return '';
+  const h = hours.padStart(2, '0');
+  const m = minutes.padStart(2, '0');
+  return `${h}:${m}`;
 };
 
 const formatCurrency = (value: number | string): string => {
@@ -186,11 +182,11 @@ const BusinessAppointmentDetail = () => {
   const updateStatusMutation = apiMutation(
     async ({ id, status, paymentStatus }: { id: number; status: string; paymentStatus: string }) => {
       // First update the booking status
-      const result = await bookingService.updateBookingStatus(id, status as any);
-      
-      // If we also need to update payment status, we would need to ensure the API supports this
-      // Currently, the API method only updates the booking status, not payment status
-      // We may need to extend the API method or create a new one
+      const result = await bookingService.updateBookingStatus(
+        id,
+        status as any,
+        paymentStatus
+      );
       
       return result;
     },
@@ -221,7 +217,7 @@ const BusinessAppointmentDetail = () => {
   };
   
   const goBack = () => {
-    navigate('/business-dashboard/appointments');
+    navigate(-1);
   };
   
   if (isLoading) {
@@ -316,6 +312,13 @@ const BusinessAppointmentDetail = () => {
                     <div>
                       <p className="font-medium">Email</p>
                       <p className="text-muted-foreground">{booking.customer?.email || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Điện thoại</p>
+                      <p className="text-muted-foreground">{booking.customer?.phone || 'Không có thông tin'}</p>
                     </div>
                   </div>
                   {booking.customer?.phone && (
@@ -454,7 +457,7 @@ const BusinessAppointmentDetail = () => {
                     className="w-full bg-green-600 hover:bg-green-700" 
                     onClick={() => {
                       setSelectedStatus('completed');
-                      setSelectedPaymentStatus(booking.paymentStatus === 'pending' ? 'paid' : booking.paymentStatus);
+                      setSelectedPaymentStatus(booking.paymentStatus !== 'paid' ? 'paid' : booking.paymentStatus);
                       setIsUpdateStatusDialogOpen(true);
                     }}
                   >

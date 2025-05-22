@@ -94,7 +94,7 @@ const EditBookingModal = ({ bookingDetailId, isOpen, onClose, onSave }: EditBook
   // Sửa lại hàm handleDateChange để validate ngày
   const handleDateChange = (date: Date | undefined) => {
     if (date && isBefore(startOfDay(date), startOfDay(new Date()))) {
-      toast.error('Không thể chọn ngày trong quá khứ');
+      // toast.error('Không thể chọn ngày trong quá khứ');
       return;
     }
     
@@ -120,7 +120,7 @@ const EditBookingModal = ({ bookingDetailId, isOpen, onClose, onSave }: EditBook
   // Sửa lại handleSave
   const handleSave = async () => {
     if (!selectedDate || !selectedTimeSlot || !bookingDetail) {
-      toast.error('Vui lòng chọn đầy đủ thông tin');
+      // toast.error('Vui lòng chọn đầy đủ thông tin');
       return;
     }
 
@@ -132,12 +132,12 @@ const EditBookingModal = ({ bookingDetailId, isOpen, onClose, onSave }: EditBook
         endTime: selectedTimeSlot.endTime
       });
 
-      toast.success('Cập nhật đặt lịch thành công');
+      // toast.success('Cập nhật đặt lịch thành công');
       onSave();
       onClose();
     } catch (error) {
       console.error('Error updating booking:', error);
-      toast.error('Không thể cập nhật đặt lịch');
+      // toast.error('Không thể cập nhật đặt lịch');
     }
   };
 

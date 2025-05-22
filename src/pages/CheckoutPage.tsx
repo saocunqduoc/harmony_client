@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -20,6 +19,10 @@ import { toast } from 'sonner';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2 } from 'lucide-react';
 import { vi } from 'date-fns/locale';
+import Cookies from 'js-cookie';
+ 
+
+const BOOKING_ID_COOKIE = 'harmony_current_booking';
 
 const formatTime = (time: string) => {
   if (!time || time === '00:00:00') return '';
@@ -58,14 +61,29 @@ const CheckoutPage = () => {
       
       if (paymentMethod === 'cash') {
         // If paying by cash, just confirm the booking
-        await bookingService.confirmBooking(bookingIdNumber);
+        const response = await bookingService.confirmBooking(bookingIdNumber);
+        if (!response || response.error) {
+          toast.error(response?.message || 'Không thể xác nhận đặt lịch. Vui lòng thử lại.');
+          return;
+        }
+        
         toast.success('Đã đặt lịch thành công!');
         navigate('/user/bookings?tab=upcoming');
       } else if (paymentMethod === 'zalopay') {
         // If paying by ZaloPay, initialize payment
         console.log('Initializing ZaloPay payment for booking:', bookingIdNumber);
         // Cập nhật trạng thái bookingDetails => lock
-        await bookingService.confirmBooking(bookingIdNumber);
+        const confirmResponse = await bookingService.confirmBooking(bookingIdNumber);
+        Cookies.set(BOOKING_ID_COOKIE, bookingIdNumber, {
+          expires: 1/24, // 1 hour
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        });
+        if (!confirmResponse || confirmResponse.error) {
+          toast.error(confirmResponse?.message || 'Không thể xác nhận đặt lịch. Vui lòng thử lại.');
+          return;
+        }
+        
         // Khởi tạo thanh toán ZaloPay
         const response = await paymentService.initPayment({
           bookingId: bookingIdNumber,
@@ -78,12 +96,22 @@ const CheckoutPage = () => {
           // Redirect to payment gateway
           window.location.href = response.redirectUrl;
         } else {
-          toast.error('Không thể khởi tạo thanh toán');
+          toast.error(response?.message || 'Không thể khởi tạo thanh toán');
         }
       }
     } catch (error) {
       console.error('Error processing booking:', error);
-      toast.error('Không thể xác nhận đặt lịch');
+      let errorMessage = 'Không thể xác nhận đặt lịch';
+      
+      if (error.response) {
+        // Server trả về lỗi với định dạng cụ thể
+        errorMessage = error.response.data?.message || errorMessage;
+      } else if (error.message) {
+        // Lỗi thông thường có thuộc tính message
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

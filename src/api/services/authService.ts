@@ -37,6 +37,10 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
+export interface ResendOtpRequest {
+  email: string;
+}
+
 export interface VerifyOtpForPasswordResetRequest {
   email: string;
   otp: string;
@@ -197,6 +201,14 @@ export const authService = {
    */
   forgotPassword: async (data: ForgotPasswordRequest) => {
     return apiClient.post<{ message: string }>("/auth/forgot-password", data);
+  },
+
+  /**
+   * 
+   * Resend OTP for verifying email
+   */
+  resendOtp: async (data: ResendOtpRequest) => {
+    return apiClient.post<{ message: string }>("/auth/resend-verify", data );
   },
 
   /**

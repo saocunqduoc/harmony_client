@@ -56,21 +56,29 @@ const DAYS_OF_WEEK_VI = {
 // Form schemas
 const singleDayHoursSchema = z.object({
   dayOfWeek: z.enum(DAYS_OF_WEEK),
-  openTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)').nullable(),
-  closeTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)').nullable(),
+  openTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)'),
+  closeTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)'),
+  isClosed: z.boolean().default(false),
+});
+
+const editSingleDayHoursSchema = z.object({
+  dayOfWeek: z.enum(DAYS_OF_WEEK),
+  openTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)'),
+  closeTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)'),
   isClosed: z.boolean().default(false),
 });
 
 const multipleDayHoursSchema = z.object({
   startDay: z.enum(DAYS_OF_WEEK),
   endDay: z.enum(DAYS_OF_WEEK),
-  openTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)').nullable(),
-  closeTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)').nullable(),
+  openTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)'),
+  closeTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Định dạng thời gian không hợp lệ (HH:MM)'),
   isClosed: z.boolean().default(false),
 });
 
 type SingleDayFormValues = z.infer<typeof singleDayHoursSchema>;
 type MultipleDayFormValues = z.infer<typeof multipleDayHoursSchema>;
+type editSingleDayFormValues = z.infer<typeof editSingleDayHoursSchema>;
 
 export const BusinessHoursManager = () => {
   const { 
@@ -119,24 +127,23 @@ export const BusinessHoursManager = () => {
     if (editingHours) {
       singleDayForm.reset({
         dayOfWeek: editingHours.dayOfWeek,
-        openTime: editingHours.openTime,
-        closeTime: editingHours.closeTime,
+        openTime: editingHours.openTime.slice(0,5),   // strip seconds, always string
+        closeTime: editingHours.closeTime.slice(0,5),
         isClosed: editingHours.isClosed
       });
     } else {
       singleDayForm.reset({
         dayOfWeek: 'Monday',
-        openTime: '09:00',
+        openTime:  '09:00',
         closeTime: '17:00',
-        isClosed: false
+        isClosed:  false
       });
-      
       multipleDayForm.reset({
         startDay: 'Monday',
-        endDay: 'Friday',
-        openTime: '09:00',
+        endDay:   'Friday',
+        openTime:  '09:00',
         closeTime: '17:00',
-        isClosed: false
+        isClosed:  false
       });
     }
   }, [editingHours, singleDayForm, multipleDayForm]);
@@ -407,8 +414,8 @@ const SingleDayHoursForm = ({ form, onSubmit, isSubmitting, onCancel, isEdit = f
                     <Input 
                       {...field} 
                       type="time" 
-                      value={field.value || ''} 
-                      onChange={(e) => field.onChange(e.target.value || null)}
+                      value={field.value} 
+                      onChange={(e) => field.onChange(e.target.value)}  // always string HH:mm
                     />
                   </FormControl>
                   <FormMessage />
@@ -426,8 +433,8 @@ const SingleDayHoursForm = ({ form, onSubmit, isSubmitting, onCancel, isEdit = f
                     <Input 
                       {...field} 
                       type="time" 
-                      value={field.value || ''} 
-                      onChange={(e) => field.onChange(e.target.value || null)}
+                      value={field.value} 
+                      onChange={(e) => field.onChange(e.target.value)}  // always string HH:mm
                     />
                   </FormControl>
                   <FormMessage />
@@ -540,8 +547,8 @@ const MultipleDayHoursForm = ({ form, onSubmit, isSubmitting, onCancel }: HoursF
                     <Input 
                       {...field} 
                       type="time" 
-                      value={field.value || ''} 
-                      onChange={(e) => field.onChange(e.target.value || null)}
+                      value={field.value} 
+                      onChange={(e) => field.onChange(e.target.value)}  // always string HH:mm
                     />
                   </FormControl>
                   <FormMessage />
@@ -559,8 +566,8 @@ const MultipleDayHoursForm = ({ form, onSubmit, isSubmitting, onCancel }: HoursF
                     <Input 
                       {...field} 
                       type="time" 
-                      value={field.value || ''} 
-                      onChange={(e) => field.onChange(e.target.value || null)}
+                      value={field.value} 
+                      onChange={(e) => field.onChange(e.target.value)}  // always string HH:mm
                     />
                   </FormControl>
                   <FormMessage />

@@ -274,16 +274,16 @@ const AdminServices = () => {
           value={verification} 
           onValueChange={setVerification}
         >
-          <SelectTrigger className="w-[200px]">
+          {/* <SelectTrigger className="w-[200px]"> */}
             {/* <SelectValue placeholder="Lọc theo xác thực" /> */}
-          </SelectTrigger>
-          <SelectContent>
+          {/* </SelectTrigger> */}
+          {/* <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
             <SelectItem value="verified">Đã xác thực</SelectItem>
             <SelectItem value="rejected">Từ chối xác thực</SelectItem>
             <SelectItem value="pending">Chờ xác thực</SelectItem>
             <SelectItem value="unverified">Chưa xác thực</SelectItem>
-          </SelectContent>
+          </SelectContent> */}
         </Select>
 
         <Button type="submit">
@@ -292,9 +292,6 @@ const AdminServices = () => {
       </form>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Danh sách dịch vụ</CardTitle>
-        </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
@@ -469,10 +466,24 @@ const AdminServices = () => {
                       >
                         Trước
                       </Button>
+                      {/* new page number buttons */}
+                      {Array.from({ length: pagination.totalPages }, (_, idx) => {
+                        const pageNum = idx + 1;
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={page === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(p => p + 1)}
+                        onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                         disabled={page >= pagination.totalPages}
                       >
                         Sau

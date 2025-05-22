@@ -9,7 +9,9 @@ import {
   CheckCircle,
   XCircle,
   Trash,
-  Star
+  Star,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { 
   Select,
@@ -212,9 +214,6 @@ const AdminReviews = () => {
       </form>
 
       <Card>
-        <CardHeader className="pb-2">
-          {/* <CardTitle className="text-lg">Danh sách đánh giá</CardTitle> */}
-        </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
@@ -226,170 +225,149 @@ const AdminReviews = () => {
               <p>Đã xảy ra lỗi khi tải danh sách đánh giá</p>
             </div>
           ) : (
-            <div>
-              {reviews.length === 0 ? (
-                <div className="text-center py-10">
-                  <h3 className="text-lg font-medium">Không có đánh giá nào</h3>
-                  <p className="text-muted-foreground mt-2">
-                    Không tìm thấy đánh giá nào phù hợp với bộ lọc hiện tại
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {reviews.map((review: any) => (
-                    <div 
-                      key={review.id} 
-                      className="flex flex-col md:flex-row gap-4 border-b border-border pb-6"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">
-                              {review.customerName|| 'Người dùng ẩn danh'}
-                            </div>
-                            <div className="text-sm text-muted-foreground mb-1">
-                              {new Date(review.createdAt).toLocaleDateString()}
-                            </div>
-                            {renderRating(review.rating)}
-                          </div>
-                          <div>
-                            {renderStatus(review.status)}
-                          </div>
-                        </div>
-                        
-                        <h4 className="text-sm font-medium mt-2">
-                          Dịch vụ: {review.serviceName || 'Chưa rõ'}
-                        </h4>
-                        <h4 className="text-sm font-medium mb-2">
-                          Tại: {review.businessName || 'Chưa rõ'}
-                        </h4>
-                        
-                        <p className="text-sm mt-2 border-l-2 border-muted pl-2 py-1">
-                          {review.comment || 'Không có bình luận'}
-                        </p>
-                        
-                        {review.status === 'rejected' && review.reasonRejected && (
-                          <div className="mt-2 text-sm bg-red-50 p-2 rounded">
-                            <span className="font-medium">Lý do từ chối:</span> {review.reasonRejected}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex gap-2 self-start">
-                        {review.status === 'pending' && (
-                          <>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-green-600" 
-                                  onClick={() => handleApproveReview(review.id)}
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Duyệt đánh giá</TooltipContent>
-                            </Tooltip>
-                            
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 px-4 text-left">Người đánh giá</th>
+                      <th className="py-2 px-4 text-left">Đánh giá</th>
+                      <th className="py-2 px-4 text-left">Dịch vụ</th>
+                      <th className="py-2 px-4 text-left">Doanh nghiệp</th>
+                      <th className="py-2 px-4 text-left">Nội dung</th>
+                      <th className="py-2 px-4 text-left">Ngày</th>
+                      <th className="py-2 px-4 text-left">Trạng thái</th>
+                      <th className="py-2 px-4 text-right">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviews.map(review => (
+                      <tr key={review.id} className="border-b hover:bg-muted/50">
+                        <td className="py-2 px-4">{review.customerName}</td>
+                        <td className="py-2 px-4">{renderRating(review.rating)}</td>
+                        <td className="py-2 px-4">{review.serviceName}</td>
+                        <td className="py-2 px-4">{review.businessName}</td>
+                        <td className="py-2 px-4">{review.comment}</td>
+                        <td className="py-2 px-4">{new Date(review.createdAt).toLocaleDateString()}</td>
+                        <td className="py-2 px-4">{renderStatus(review.status)}</td>
+                        <td className="py-2 px-4 text-right">
+                          <div className="flex justify-end space-x-2">
+                            {review.status !== 'approved' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button size="icon" variant="outline" className="text-green-600"
+                                    onClick={() => handleApproveReview(review.id)}>
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Duyệt</TooltipContent>
+                              </Tooltip>
+                            )}
+                            {review.status !== 'rejected' && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="icon" variant="outline" className="text-red-600"
+                                    onClick={() => openRejectDialog(review.id)}>
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Từ chối đánh giá</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Vui lòng cung cấp lý do từ chối đánh giá này. Người dùng có thể sẽ nhận được thông báo.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <Textarea
+                                    placeholder="Lý do từ chối..."
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                    className="mt-2"
+                                  />
+                                  <AlertDialogFooter className="mt-4">
+                                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={handleRejectConfirm} 
+                                      disabled={!rejectReason.trim()}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Từ chối
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-red-600"
-                                  onClick={() => openRejectDialog(review.id)}
-                                >
-                                  <XCircle className="h-4 w-4" />
+                                <Button size="icon" variant="outline" className="text-red-600"
+                                  onClick={() => handleDeleteReview(review.id)}>
+                                  <Trash className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Từ chối đánh giá</AlertDialogTitle>
+                                  <AlertDialogTitle>Xóa đánh giá</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Vui lòng cung cấp lý do từ chối đánh giá này. Người dùng có thể sẽ nhận được thông báo.
+                                    Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
-                                <Textarea
-                                  placeholder="Lý do từ chối..."
-                                  value={rejectReason}
-                                  onChange={(e) => setRejectReason(e.target.value)}
-                                  className="mt-2"
-                                />
-                                <AlertDialogFooter className="mt-4">
+                                <AlertDialogFooter>
                                   <AlertDialogCancel>Hủy</AlertDialogCancel>
                                   <AlertDialogAction 
-                                    onClick={handleRejectConfirm} 
-                                    disabled={!rejectReason.trim()}
+                                    onClick={() => handleDeleteReview(review.id)} 
                                     className="bg-red-600 hover:bg-red-700"
                                   >
-                                    Từ chối
+                                    Xóa
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
-                          </>
-                        )}
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="text-red-600"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Xóa đánh giá</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Hủy</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleDeleteReview(review.id)} 
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Xóa
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
               {/* Pagination */}
-              {pagination && pagination.total > pagination.limit && (
-                <div className="flex items-center justify-center space-x-2 mt-6">
+              {pagination && pagination.totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-2 mt-6">
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
+                    disabled={page <= 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
                   >
-                    Trang trước
+                    <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <div className="text-sm">
-                    Trang {page} / {pagination.totalPages}
-                  </div>
+                  <span className="text-sm text-muted-foreground">Trang</span>
+                  <Input
+                    type="number"
+                    size="sm"
+                    className="w-16 text-center"
+                    min={1}
+                    max={pagination.totalPages}
+                    value={page}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val >= 1 && val <= pagination.totalPages) {
+                        setPage(val);
+                      }
+                    }}
+                  />
+                  <span className="text-sm text-muted-foreground">/ {pagination.totalPages}</span>
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => p + 1)}
+                    size="icon"
                     disabled={page >= pagination.totalPages}
+                    onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                   >
-                    Trang sau
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               )}
-            </div>
+            </>
           )}
         </CardContent>
       </Card>

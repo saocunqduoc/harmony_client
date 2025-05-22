@@ -78,15 +78,11 @@ const safeFormatDate = (dateString: string) => {
 
 const formatTime = (time: string) => {
   if (!time || time === '00:00:00') return '';
-  try {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    if (isNaN(hour)) return '';
-    return `${hour > 12 ? hour - 12 : hour}:${minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
-  } catch (error) {
-    console.error('Error formatting time:', time, error);
-    return '';
-  }
+  const [hours, minutes] = time.split(':');
+  if (hours == null || minutes == null) return '';
+  const h = hours.padStart(2, '0');
+  const m = minutes.padStart(2, '0');
+  return `${h}:${m}`;
 };
 
 const UserBookings = () => {
@@ -252,18 +248,18 @@ const UserBookings = () => {
           <TabsContent value={activeTab}>
             {isLoading ? (
               <div className="text-center py-8">
-                <p>Loading bookings...</p>
+                <p>Đang tải danh sách lịch hẹn...</p>
               </div>
             ) : error ? (
               <div className="text-center py-8">
-                <p className="text-red-500">Error loading bookings. Please try again.</p>
+                <p className="text-red-500">Có lỗi xảy ra khi tải. Vui lòng thử lại sau.</p>
                 <Button onClick={() => refetch()} className="mt-4">Retry</Button>
               </div>
             ) : filteredBookingDates.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No bookings found.</p>
+                <p className="text-muted-foreground mb-4">Không có lịch hẹn được tìm thấy.</p>
                 <Button asChild>
-                  <Link to="/services">Browse Services</Link>
+                  <Link to="/services">Khám phá dịch vụ</Link>
                 </Button>
               </div>
             ) : (
@@ -290,9 +286,9 @@ const UserBookings = () => {
                             </div>
                           </div>
                           <div className="flex space-x-2">
-                            <Badge className={statusColors[booking.status] || 'bg-gray-100'}>
+                            {/* <Badge className={statusColors[booking.status] || 'bg-gray-100'}>
                               {statusLabels[booking.status] || booking.status}
-                            </Badge>
+                            </Badge> */}
                             <Badge variant="outline" className={paymentStatusColors[booking.paymentStatus] || 'bg-gray-100'}>
                               {paymentStatusLabels[booking.paymentStatus] || booking.paymentStatus}
                             </Badge>
@@ -369,7 +365,7 @@ const UserBookings = () => {
                               size="sm"
                               onClick={() => handleAddMoreServices(parseInt(booking.businessId, 10))}
                             >
-                              Add More Services
+                              Thêm dịch vụ khác
                             </Button>
                             <Button 
                               size="sm"

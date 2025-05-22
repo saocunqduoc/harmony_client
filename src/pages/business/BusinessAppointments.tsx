@@ -1,9 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, addDays, subDays, parseISO } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Check, X, Info, AlertCircle, Phone, Calendar, Clock, User, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, X, Info, AlertCircle, Phone, Clock, User, Search, Calendar as CalendarIcon } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { 
   Table, 
   TableBody, 
@@ -68,11 +70,13 @@ const PaymentStatusBadge = ({ status }: { status: string }) => {
   return <Badge variant="outline" className={`${colorClass} font-normal`}>{statusDisplay[status] || status}</Badge>;
 };
 
-const formatTime = (timeString: string) => {
-  if (!timeString || timeString === '00:00:00') return '';
-  const [hours, minutes] = timeString.split(':');
-  const hour = parseInt(hours);
-  return `${hour > 12 ? hour - 12 : hour}:${minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
+const formatTime = (time: string) => {
+  if (!time || time === '00:00:00') return '';
+  const [hours, minutes] = time.split(':');
+  if (hours == null || minutes == null) return '';
+  const h = hours.padStart(2, '0');
+  const m = minutes.padStart(2, '0');
+  return `${h}:${m}`;
 };
 
 interface BusinessBooking {
@@ -91,12 +95,21 @@ interface BusinessBooking {
 }
 
 const BusinessAppointments = () => {
-  const [date, setDate] = useState(new Date());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paramDate = searchParams.get('date');
+  const [date, setDate] = useState<Date>(() =>
+    paramDate ? parseISO(paramDate) : new Date()
+  );
   const [bookings, setBookings] = useState<BusinessBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  // sync date → URL
+  useEffect(() => {
+    setSearchParams({ date: format(date, 'yyyy-MM-dd') }, { replace: true });
+  }, [date, setSearchParams]);
 
   const formattedDate = format(date, 'yyyy-MM-dd');
 
@@ -152,9 +165,17 @@ const BusinessAppointments = () => {
     navigate(`/business-dashboard/appointments/${bookingId}`);
   };
 
-  const handleUpdateStatus = async (bookingId: number, newStatus: string) => {
+  const handleUpdateStatus = async (
+    bookingId: number,
+    newStatus: string,
+    paymentStatus?: string
+  ) => {
     try {
-      await bookingService.updateBookingStatus(bookingId, newStatus as any);
+      await bookingService.updateBookingStatus(
+        bookingId,
+        newStatus as any,
+        paymentStatus
+      );
       toast.success('Cập nhật trạng thái thành công');
       fetchBookings();
     } catch (error) {
@@ -188,7 +209,22 @@ const BusinessAppointments = () => {
           <Button variant="outline" size="sm" onClick={handlePreviousDay}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="font-medium">{format(date, 'dd/MM/yyyy')}</div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="font-medium">
+                <CalendarIcon className="mr-1 h-4 w-4" />
+                {format(date, 'dd/MM/yyyy')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <CalendarComponent
+                mode="single"
+                selected={date}
+                onSelect={(d) => d && setDate(d)}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           <Button variant="outline" size="sm" onClick={handleNextDay}>
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -269,7 +305,7 @@ const BusinessAppointments = () => {
                       <TableCell>
                         <div className="flex flex-col">
                           <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
+                            <CalendarIcon className="h-3 w-3 mr-1" />
                             <span className="text-sm">{format(parseISO(booking.bookingDate), 'dd/MM/yyyy')}</span>
                           </div>
                           {booking.startTime && booking.startTime !== '00:00:00' && (
@@ -287,95 +323,121 @@ const BusinessAppointments = () => {
                         <PaymentStatusBadge status={booking.paymentStatus} />
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => handleViewDetails(booking.id)}>
-                            Chi tiết
-                          </Button>
-                          
-                          {booking.status === 'pending' && (
-                            <HoverCard>
-                              <HoverCardTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  Cập nhật
-                                </Button>
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-56 p-2">
-                                <div className="space-y-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="default" 
-                                    className="w-full"
-                                    onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
-                                  >
-                                    <Check className="h-4 w-4 mr-2" /> Xác nhận
+                        {booking.paymentStatus !== 'failed' && booking.status !== 'draft' && (
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" size="sm" onClick={() => handleViewDetails(booking.id)}>
+                              Chi tiết
+                            </Button>
+                            
+                            {booking.status === 'pending' && (
+                              <HoverCard>
+                                <HoverCardTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    Cập nhật
                                   </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="default" 
-                                    className="w-full bg-green-600 hover:bg-green-700"
-                                    onClick={() => handleUpdateStatus(booking.id, 'completed')}
-                                  >
-                                    <Check className="h-4 w-4 mr-2" /> Hoàn thành
+                                </HoverCardTrigger>
+                                <HoverCardContent className="w-56 p-2">
+                                  <div className="space-y-2">
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="w-full"
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          booking.id,
+                                          'confirmed',
+                                          booking.paymentStatus
+                                        )
+                                      }
+                                    >
+                                      <Check className="h-4 w-4 mr-2" /> Xác nhận
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="w-full bg-green-600 hover:bg-green-700"
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          booking.id,
+                                          'completed',
+                                          'paid' // hoặc booking.paymentStatus tuỳ ý
+                                        )
+                                      }
+                                    >
+                                      <Check className="h-4 w-4 mr-2" /> Hoàn thành
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="w-full"
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          booking.id,
+                                          'cancelled',
+                                          booking.paymentStatus
+                                        )
+                                      }
+                                    >
+                                      <X className="h-4 w-4 mr-2" /> Hủy bỏ
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="w-full"
+                                      onClick={() =>
+                                        handleUpdateStatus(
+                                          booking.id,
+                                          'no_show',
+                                          booking.paymentStatus
+                                        )
+                                      }
+                                    >
+                                      <User className="h-4 w-4 mr-2" /> Không đến
+                                    </Button>
+                                  </div>
+                                </HoverCardContent>
+                              </HoverCard>
+                            )}
+                            
+                            {booking.status === 'confirmed' && (
+                              <HoverCard>
+                                <HoverCardTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    Cập nhật
                                   </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="destructive" 
-                                    className="w-full"
-                                    onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
-                                  >
-                                    <X className="h-4 w-4 mr-2" /> Hủy bỏ
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="w-full"
-                                    onClick={() => handleUpdateStatus(booking.id, 'no_show')}
-                                  >
-                                    <User className="h-4 w-4 mr-2" /> Không đến
-                                  </Button>
-                                </div>
-                              </HoverCardContent>
-                            </HoverCard>
-                          )}
-                          
-                          {booking.status === 'confirmed' && (
-                            <HoverCard>
-                              <HoverCardTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  Cập nhật
-                                </Button>
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-56 p-2">
-                                <div className="space-y-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="default" 
-                                    className="w-full bg-green-600 hover:bg-green-700"
-                                    onClick={() => handleUpdateStatus(booking.id, 'completed')}
-                                  >
-                                    <Check className="h-4 w-4 mr-2" /> Hoàn thành
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="destructive" 
-                                    className="w-full"
-                                    onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
-                                  >
-                                    <X className="h-4 w-4 mr-2" /> Hủy bỏ
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="w-full"
-                                    onClick={() => handleUpdateStatus(booking.id, 'no_show')}
-                                  >
-                                    <User className="h-4 w-4 mr-2" /> Không đến
-                                  </Button>
-                                </div>
-                              </HoverCardContent>
-                            </HoverCard>
-                          )}
-                        </div>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="w-56 p-2">
+                                  <div className="space-y-2">
+                                    <Button 
+                                      size="sm" 
+                                      variant="default" 
+                                      className="w-full bg-green-600 hover:bg-green-700"
+                                      onClick={() => handleUpdateStatus(booking.id, 'completed')}
+                                    >
+                                      <Check className="h-4 w-4 mr-2" /> Hoàn thành
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="destructive" 
+                                      className="w-full"
+                                      onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
+                                    >
+                                      <X className="h-4 w-4 mr-2" /> Hủy bỏ
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="w-full"
+                                      onClick={() => handleUpdateStatus(booking.id, 'no_show')}
+                                    >
+                                      <User className="h-4 w-4 mr-2" /> Không đến
+                                    </Button>
+                                  </div>
+                                </HoverCardContent>
+                              </HoverCard>
+                            )}
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -385,7 +447,7 @@ const BusinessAppointments = () => {
           ) : (
             <div className="text-center py-8">
               <div className="flex justify-center mb-4">
-                <Calendar className="h-12 w-12 text-muted-foreground" />
+                <CalendarIcon className="h-12 w-12 text-muted-foreground" />
               </div>
               <p className="text-muted-foreground">Không có lịch hẹn nào trong ngày này.</p>
             </div>

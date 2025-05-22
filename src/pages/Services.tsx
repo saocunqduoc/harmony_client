@@ -299,7 +299,7 @@ const Services = () => {
           <div className="lg:col-span-3">
             {services.totalItems > 0 && (
               <p className="mb-4 text-muted-foreground">
-                Hiển thị {services.services.length} / {services.totalItems} kết quả
+                Tìm thấy {services.totalItems} dịch vụ
               </p>
             )}
             

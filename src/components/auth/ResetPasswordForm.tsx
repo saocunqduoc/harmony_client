@@ -51,7 +51,7 @@ const ResetPasswordForm = () => {
     const otpParam = params.get('otp');
     
     if (!emailParam || !otpParam) {
-      toast.error('Email hoặc OTP không hợp lệ hoặc bị thiếu');
+      // toast.error('Email hoặc OTP không hợp lệ hoặc bị thiếu');
       navigate('/forgot-password');
       return;
     }
@@ -77,11 +77,11 @@ const ResetPasswordForm = () => {
         newPassword: values.password,
       });
       
-      toast.success('Đặt lại mật khẩu thành công');
+      // toast.success('Đặt lại mật khẩu thành công');
       navigate('/login', { replace: true });
     } catch (error) {
       console.error('Password reset failed:', error);
-      toast.error('Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
+      // toast.error('Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }

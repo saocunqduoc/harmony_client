@@ -119,9 +119,9 @@ const AdminBusinesses = () => {
       </form>
 
       <Card>
-        <CardHeader className="pb-2">
+        {/* <CardHeader className="pb-2">
           <CardTitle className="text-lg">Doanh nghiệp</CardTitle>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
@@ -153,7 +153,7 @@ const AdminBusinesses = () => {
                         <td className="py-3 px-4 font-medium">{business.name}</td>
                         <td className="py-3 px-4">{business.owner?.fullName || "N/A"}</td>
                         <td className="py-3 px-4">{business.email || business.owner?.email}</td>
-                        <td className="py-3 px-4">{business.address}</td>
+                        <td className="py-3 px-4">{business.address + ', ' + business.ward+ ', ' + business.district + ', ' + business.city}</td>
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${
                             business.status === 'active' 
@@ -261,7 +261,7 @@ const AdminBusinesses = () => {
                   <div>
                     Hiển thị {(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} trên {pagination.total} doanh nghiệp
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       variant="outline"
                       size="sm"
@@ -278,6 +278,15 @@ const AdminBusinesses = () => {
                     >
                       Sau
                     </Button>
+                    {/* Jump to page input */}
+                    <Input
+                      type="number"
+                      min={1}
+                      max={pagination.totalPages}
+                      value={page}
+                      onChange={(e) => setPage(Number(e.target.value))}
+                      className="w-16 text-center"
+                    />
                   </div>
                 </div>
               )}

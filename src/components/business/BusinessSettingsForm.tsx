@@ -364,7 +364,7 @@ export const BusinessSettingsForm = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="latitude">Vĩ độ (Latitude)</Label>
                     <Input
@@ -382,7 +382,7 @@ export const BusinessSettingsForm = () => {
                       {...register('longitude')}
                     />
                   </div>
-                </div>
+                </div> */}
                 
                 <div className="space-y-2">
                   <Label htmlFor="taxCode">Mã số thuế</Label>

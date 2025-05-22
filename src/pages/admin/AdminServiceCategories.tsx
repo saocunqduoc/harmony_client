@@ -230,9 +230,9 @@ const AdminServiceCategories = () => {
       </form>
 
       <Card>
-        <CardHeader className="pb-2">
+        {/* <CardHeader className="pb-2">
           <CardTitle className="text-lg">Danh sách danh mục</CardTitle>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center py-8">

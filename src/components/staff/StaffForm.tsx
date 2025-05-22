@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -20,33 +19,39 @@ interface StaffFormProps {
   initialData?: { position: string; specialization?: string };
   isEdit?: boolean;
   isSubmitting?: boolean;
+  fixedRole?: string;
 }
 
 const StaffForm: React.FC<StaffFormProps> = ({ 
   onSubmit, 
   initialData, 
   isEdit = false, 
-  isSubmitting = false 
+  isSubmitting = false,
+  fixedRole,
 }) => {
   const form = useForm({
     defaultValues: {
       email: '',
       fullName: '',
-      role: 'staff',
+      role: fixedRole ?? 'staff',
       position: initialData?.position || '',
       specialization: initialData?.specialization || '',
-    }
+    },
   });
-
-  const handleSubmit = (data: any) => {
-    onSubmit(data);
-  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {!isEdit && (
           <>
+            {fixedRole && (
+              <input
+                type="hidden"
+                {...form.register('role')}
+                value={fixedRole}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="email"
@@ -84,34 +89,36 @@ const StaffForm: React.FC<StaffFormProps> = ({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Vai trò</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                    disabled={isSubmitting}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn vai trò" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {StaffRoles.map((role) => (
-                        <SelectItem key={role.value} value={role.value}>
-                          {role.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!fixedRole && (
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vai trò</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn vai trò" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {StaffRoles.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </>
         )}
 
